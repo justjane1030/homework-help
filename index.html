@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1864ab">
+<title>Homework Helper — Photo (bring your own key)</title>
+<style>
+  :root{
+    --bg:#f4f7fb; --card:#ffffff; --fg:#1a1a2e; --muted:#5a6475;
+    --blue:#1864ab; --blue2:#4dabf7; --pink:#e64980; --pink2:#ff8cc3;
+    --green:#2b8a3e; --purple:#7c3aed; --orange:#e67700; --yellow:#f6c343;
+    --line:#e3e9f2; --shadow:0 6px 24px rgba(20,40,80,.10);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    background:var(--bg); color:var(--fg); line-height:1.5;
+    padding:0 0 60px; max-width:560px; margin:0 auto;
+  }
+  header.appbar{
+    position:sticky; top:0; z-index:20;
+    background:linear-gradient(135deg,var(--blue),var(--blue2));
+    color:#fff; padding:14px 18px; box-shadow:var(--shadow);
+  }
+  header.appbar .title{font-size:19px;font-weight:800;letter-spacing:.2px}
+  header.appbar .sub{font-size:12px;opacity:.92;margin-top:2px}
+  .wrap{padding:16px}
+  .screen{display:none}
+  .screen.active{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .hero{background:var(--card); border-radius:18px; padding:20px; box-shadow:var(--shadow); margin-bottom:16px; border:1px solid var(--line);}
+  .hero h1{font-size:22px;margin:0 0 6px}
+  .hero p{margin:0;color:var(--muted);font-size:14px}
+  .btn{display:block; width:100%; border:0; border-radius:14px; padding:16px; font-size:16px; font-weight:700; cursor:pointer; margin-top:12px; transition:transform .08s ease, box-shadow .15s ease;}
+  .btn:active{transform:scale(.98)}
+  .btn.primary{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;box-shadow:var(--shadow)}
+  .btn.pink{background:linear-gradient(135deg,var(--pink),var(--pink2));color:#fff;box-shadow:var(--shadow)}
+  .btn.ghost{background:var(--card);color:var(--blue);border:2px solid var(--blue)}
+  .btn[disabled]{opacity:.5;cursor:not-allowed}
+  .btn .big{font-size:17px}
+  .btn .small{display:block;font-size:12px;font-weight:600;opacity:.85;margin-top:3px}
+  .pill{display:inline-block;background:#e7f0ff;color:var(--blue);font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;margin-bottom:8px}
+  .note{font-size:12px;color:var(--muted);text-align:center;margin-top:14px;line-height:1.6}
+
+  label.fld{display:block;font-weight:700;font-size:14px;margin:14px 0 6px}
+  textarea,input[type=text],input[type=password]{
+    width:100%;border:1.5px solid var(--line);border-radius:12px;padding:12px;
+    font-size:15px;font-family:inherit;background:var(--card);color:var(--fg);
+  }
+  .keybox{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 2px 8px rgba(20,40,80,.05)}
+  .keybox .row{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px}
+  .keybox .status{margin-left:auto;font-size:12px;font-weight:700}
+  .keybox .status.ok{color:var(--green)} .keybox .status.no{color:#c92a2a}
+  .keybox .help{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6}
+  .keybox a{color:var(--blue)}
+  .keyfields{margin-top:10px}
+
+  .preview{width:100%;border-radius:14px;margin-top:12px;display:none;border:1px solid var(--line)}
+  .spin{display:none;text-align:center;padding:24px 0;color:var(--muted)}
+  .spin.show{display:block}
+  .spin .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--blue);margin:0 3px;animation:bounce 1s infinite}
+  .spin .dot:nth-child(2){animation-delay:.15s}.spin .dot:nth-child(3){animation-delay:.3s}
+  @keyframes bounce{0%,80%,100%{transform:scale(.5);opacity:.4}40%{transform:scale(1);opacity:1}}
+
+  /* Coach card (identical to typed prototype) */
+  .coach{background:var(--card);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;border:1px solid var(--line)}
+  .coach .top{color:#fff;padding:16px 18px}
+  .coach .top.read{background:linear-gradient(135deg,var(--pink),var(--pink2))}
+  .coach .top.word{background:linear-gradient(135deg,var(--blue),var(--blue2))}
+  .coach .top .for{font-size:12px;opacity:.92}
+  .coach .top .h{font-size:20px;font-weight:800;margin-top:2px}
+  .coach .top .s{font-size:13px;opacity:.92;margin-top:2px}
+  .sec{padding:14px 16px;border-top:1px solid var(--line)}
+  .sec:first-of-type{border-top:0}
+  .sec .st{font-weight:800;font-size:15px;margin-bottom:6px;display:flex;align-items:center;gap:7px}
+  .sec .sub{font-size:12.5px;color:var(--muted);margin-bottom:8px}
+  .warm{background:#e7f5ff} .read{background:#fff9f0} .help{background:#f6f1ff} .fun{background:#eafff3} .finish{background:#fff4e6}
+  .sec .script{background:#fff;border-radius:10px;padding:10px 12px;font-size:14px;margin-top:6px;border:1px solid var(--line)}
+  .sec .script b{color:var(--purple)}
+  .story{background:#fff;border:1px solid #ffe8a3;border-radius:10px;padding:12px;font-size:15px;line-height:1.9}
+  .ow{border-radius:5px;padding:1px 6px;font-weight:800;color:#222}
+  .ow.first{background:#ffd43b} .ow.next{background:#ffa94d} .ow.then{background:#69db7c} .ow.finally{background:#4dabf7;color:#fff}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+  .chip{background:#fff;border:1px solid var(--line);border-radius:9px;padding:7px 11px;font-size:17px}
+  .chip.sight{font-size:16px;font-weight:700}
+  .chip .c1{color:#e3342f} .chip .c2{color:#f6993f} .chip .c3{color:#38c172}
+  details{margin-top:5px}
+  details summary{cursor:pointer;color:#9aa5b5;font-size:12px;list-style:none}
+  details summary::-webkit-details-marker{display:none}
+  details summary:before{content:"👀 tap for answer";}
+  details[open] summary:before{content:"answer:";}
+  details .ans{font-weight:700;color:var(--green);margin-top:3px;font-size:14px}
+  /* tap-to-reveal answer that STAYS on the page */
+  .reveal{margin-top:6px}
+  .reveal .peekbtn{display:inline-block;cursor:pointer;background:#eef6ff;color:var(--blue);
+    border:1px solid #cfe2ff;border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:700;user-select:none}
+  .reveal .peekbtn:active{transform:scale(.97)}
+  .reveal .ansbox{display:none;margin-top:7px;background:#ebfbee;border:1px solid #b2f2bb;
+    border-radius:10px;padding:10px 12px;font-size:14.5px;font-weight:700;color:#176b33;line-height:1.5}
+  .reveal.shown .ansbox{display:block}
+  .reveal.shown .peekbtn{background:#d3f9d8;color:#176b33;border-color:#b2f2bb}
+  .reveal .ansbox .lab{display:block;font-size:11px;font-weight:700;color:#2b8a3e;letter-spacing:.4px;margin-bottom:2px;text-transform:uppercase}
+  .vocab{font-size:14.5px;line-height:1.9}
+  .vocab b{color:var(--green)}
+  .qbox{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px;margin-bottom:8px;font-size:14px}
+  .qbox .cue{color:var(--purple);font-size:13px;margin-top:3px}
+  ul.games{margin:4px 0 0;padding-left:18px;font-size:13.5px;line-height:1.85}
+  .gate{background:#ebfbee;border:1px solid #b2f2bb;border-radius:12px;padding:12px;margin-bottom:16px;font-size:12.5px}
+  .gate b{color:var(--green)}
+  .gate .chk{color:var(--green)}
+  .backbar{display:flex;gap:10px;margin:4px 0 18px}
+  .backbar button{flex:1;border:1.5px solid var(--line);background:var(--card);color:var(--fg);border-radius:12px;padding:12px;font-weight:700;font-size:14px;cursor:pointer}
+  .err{background:#fff0f0;border:1px solid #ffc9c9;color:#c92a2a;border-radius:12px;padding:12px;font-size:13.5px;margin-top:10px;display:none}
+  .footer{text-align:center;font-size:11px;color:var(--muted);margin-top:8px;padding:0 16px 20px}
+  .footer a{color:var(--blue)}
+</style>
+</head>
+<body>
+
+<header class="appbar">
+  <div class="title">📚 Homework Helper — Photo</div>
+  <div class="sub">Snap the worksheet → get a parent-coach card · bring-your-own-key (free) · build v7 (answers pinned · multi-page)</div>
+</header>
+
+<div class="wrap">
+  <!-- ============ HOME ============ -->
+  <div id="home" class="screen active">
+
+    <!-- KEY SETUP -->
+    <div class="keybox">
+      <div class="row">🔑 Your Google Gemini key <span id="keyStatus" class="status no">not set</span></div>
+      <div class="keyfields">
+        <input type="password" id="keyInput" placeholder="Paste your Gemini API key here" autocomplete="off">
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn primary" style="margin:0;padding:11px" onclick="saveKey()">Save key</button>
+          <button class="btn ghost" style="margin:0;padding:11px" onclick="clearKey()">Clear</button>
+        </div>
+      </div>
+      <div class="help">
+        Free to get: open <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a> → sign in →
+        “Create API key” → copy &amp; paste it above. Free tier, no credit card for basic use.
+        Your key is stored <b>only on this device</b> (your browser), never uploaded anywhere except Google when you scan.
+      </div>
+    </div>
+
+    <div class="hero">
+      <span class="pill">PHOTO MODE</span>
+      <h1>Snap tonight's homework 📷</h1>
+      <p>Take a photo of your child's reading worksheet. The app reads it and builds a short, warm card that tells you exactly what to say.</p>
+
+      <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="onPhoto(event)">
+      <input type="file" id="libraryInput" accept="image/*" multiple style="display:none" onchange="onPhoto(event)">
+      <button class="btn primary" id="snapBtn" onclick="document.getElementById('cameraInput').click()">
+        <span class="big">📷 Take a photo</span>
+        <span class="small">Use your camera now</span>
+      </button>
+      <button class="btn primary" id="libBtn" onclick="document.getElementById('libraryInput').click()" style="margin-top:10px;">
+        <span class="big">🖼️ Choose from library</span>
+        <span class="small">Pick one OR several photos at once</span>
+      </button>
+
+      <img id="preview" class="preview" alt="your worksheet">
+      <div id="spin" class="spin"><div>Reading the worksheet…</div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <div class="err" id="err"></div>
+    </div>
+
+    <div class="note">
+      Tip: good light, fill the frame with the page, hold steady. Printed sheets read reliably; pencil handwriting is harder.
+    </div>
+  </div>
+
+  <!-- ============ RESULT ============ -->
+  <div id="result" class="screen">
+    <div class="backbar"><button onclick="go('home')">← Scan another</button></div>
+    <div id="gate" class="gate"></div>
+    <div id="cardOut"></div>
+  </div>
+
+  <div class="footer">
+    Prototype · grounded in <code>reading-coach-basis.md</code> (Florida B.E.S.T. · Science of Reading).
+    Answers are hidden behind a tap so the child does the thinking.
+    Reading is done by Google Gemini using <b>your</b> key.
+  </div>
+</div>
+
+<script>
+/* ---------------- navigation ---------------- */
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+/* ---------------- key storage (device-only) ---------------- */
+const KEY_STORE='hh_gemini_key';
+function loadKey(){
+  const k=localStorage.getItem(KEY_STORE)||'';
+  if(k){ document.getElementById('keyInput').value=k; setKeyStatus(true); }
+  return k;
+}
+function setKeyStatus(ok){
+  const el=document.getElementById('keyStatus');
+  el.textContent = ok?'saved ✓':'not set';
+  el.className = 'status '+(ok?'ok':'no');
+  document.getElementById('snapBtn').disabled = !ok;
+}
+function saveKey(){
+  const k=document.getElementById('keyInput').value.trim();
+  if(!k){ showErr('Paste your Gemini key first.'); return; }
+  localStorage.setItem(KEY_STORE,k); setKeyStatus(true);
+  document.getElementById('err').style.display='none';
+}
+function clearKey(){ localStorage.removeItem(KEY_STORE); document.getElementById('keyInput').value=''; setKeyStatus(false); }
+
+function showErr(m){const e=document.getElementById('err');e.innerHTML=m;e.style.display='block';}
+function hideErr(){document.getElementById('err').style.display='none';}
+
+/* ---------------- phonics knowledge (accuracy gate) ---------------- */
+const VOWEL = {
+  'short a':{letter:'a',demo:['c<b>a</b>t','b<b>a</b>g','m<b>a</b>p']},
+  'short e':{letter:'e',demo:['b<b>e</b>d','p<b>e</b>n','n<b>e</b>t']},
+  'short i':{letter:'i',demo:['s<b>i</b>t','p<b>i</b>g','l<b>i</b>d']},
+  'short o':{letter:'o',demo:['d<b>o</b>g','p<b>o</b>t','m<b>o</b>p']},
+  'short u':{letter:'u',demo:['c<b>u</b>p','r<b>u</b>g','m<b>u</b>g']}
+};
+const SIGHT = new Set(['could','would','should','one','two','three','live','the','they','then','there','here','come','some','said','was','were','who','what','where','of','to','do','you','your','a','is','are','have','give','been','does','done']);
+function matchesShortVowel(word,letter){
+  const w=word.toLowerCase().replace(/[^a-z]/g,'');
+  if(w.length<2||w.length>5) return {ok:false,reason:'length'};
+  const vowels=(w.match(/[aeiou]/g)||[]);
+  if(vowels.length!==1) return {ok:false,reason:'not a single short vowel'};
+  if(vowels[0]!==letter) return {ok:false,reason:'different vowel ('+vowels[0]+')'};
+  if(/[aeiou]e$/.test(w)) return {ok:false,reason:'silent-e (long) word'};
+  return {ok:true};
+}
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+/* tap-to-reveal answer that STAYS visible once opened (no flicker, no auto-close) */
+function reveal(answerHtml){
+  return `<div class="reveal"><span class="peekbtn" onclick="this.parentNode.classList.toggle('shown')">👀 Show answer</span>`
+    + `<div class="ansbox"><span class="lab">Answer</span>${answerHtml}</div></div>`;
+}
+
+/* ---------------- ACCURACY GATE ---------------- */
+function renderGate(checks){
+  const pass = checks.every(c=>c.ok);
+  const rows = checks.map(c=>`<div>${c.ok?'<span class="chk">✓</span>':'⚠️'} ${esc(c.msg)}</div>`).join('');
+  return `<b>${pass?'✅ Passed the accuracy gate':'⚠️ Fixed before showing'}</b>
+    <div style="margin-top:6px;line-height:1.8">${rows}</div>`;
+}
+
+/* ---------------- CARD BUILDERS (shared with typed prototype) ---------------- */
+function warmSec(script){return `<div class="sec warm"><div class="st">① Warm up <span style="font-weight:500;font-size:12px;color:var(--muted)">· 1 min 🎈</span></div><div class="script">${script}</div></div>`;}
+function funSec(items){return `<div class="sec fun"><div class="st">🎉 Make it fun (pick one)</div><ul class="games">${items.map(i=>'<li>'+i+'</li>').join('')}</ul></div>`;}
+function finishSec(txt){return `<div class="sec finish"><div class="st">✅ You're done when…</div><div class="sub" style="color:var(--fg);margin:0">${txt}</div></div>`;}
+
+function buildWordCard(d){
+  const checks=[];
+  let soundLetter=null, demo=null, soundName=(d.sound||'').toLowerCase().trim();
+  if(VOWEL[soundName]){ soundLetter=VOWEL[soundName].letter; demo=VOWEL[soundName].demo; }
+  const kept=[], droppedWrong=[], movedSight=[];
+  (d.spell||[]).forEach(w=>{
+    const lw=w.toLowerCase();
+    if(SIGHT.has(lw)){ movedSight.push(w); return; }
+    if(soundLetter){ const m=matchesShortVowel(w,soundLetter); if(!m.ok){ droppedWrong.push(w); return; } }
+    kept.push(w);
+  });
+  if(soundName){
+    checks.push({ok:true,msg:`Sound-spelling: show the letter “${soundLetter||soundName}”, prove the sound with bold examples (never a bare "uh").`});
+    if(droppedWrong.length) checks.push({ok:false,msg:`Phonics: dropped ${droppedWrong.map(w=>'“'+w+'”').join(', ')} — not a ${soundName} word, so not shown in the sound-out group.`});
+    else checks.push({ok:true,msg:`Phonics: every sound-out word truly has the ${soundName} sound.`});
+  } else { checks.push({ok:true,msg:`No target sound detected — words shown as a plain sound-out list.`}); }
+  if(movedSight.length) checks.push({ok:false,msg:`Sight words: moved ${movedSight.map(w=>'“'+w+'”').join(', ')} to "just know it" (can't be sounded out).`});
+  else checks.push({ok:true,msg:`Sight words sorted into "just know it", not sound-out.`});
+  checks.push({ok:true,msg:`Clutter: no standard codes or jargon on the card.`});
+  checks.push({ok:true,msg:`Confidence: uncertain items left out, not hedged on-page.`});
+
+  const allSight=[...new Set([...movedSight, ...(d.sight||[])])];
+  let header = soundLetter ? `This week's sound: short <b>${soundLetter}</b> (like in ${demo[0]})`
+    : (d.sound? `This week: ${esc(d.sound)}` : `This week's spelling words`);
+  let html = `<div class="coach"><div class="top word"><div class="for">👪 For you, Mom/Dad · 5–10 min · keep it fun</div><div class="h">Words to Know</div><div class="s">${header}</div></div>`;
+  html += warmSec(`Say: <i>"Let's be word detectives! We're going to sound out some words and zap some 'just-know-it' words. Ready?"</i>`);
+  if(kept.length){
+    html += `<div class="sec"><div class="st">🔤 Sound these out</div><div class="sub">Point to each letter as your child makes the sound, then say it fast.</div><div class="chips">`;
+    kept.forEach(w=>{ const colored=w.split('').map((c,i)=>`<span class="c${(i%3)+1}">${esc(c)}</span>`).join(''); html+=`<span class="chip">${colored}</span>`; });
+    html+=`</div><div class="script">👪 <b>Say:</b> "Stretch it slow — /${(kept[0][0]||'b')}/ … — now say it fast!"</div></div>`;
+  }
+  if(allSight.length){
+    html += `<div class="sec"><div class="st">👀 Just know these</div><div class="sub">Don't sound out — recognize them fast.</div><div class="chips">`;
+    allSight.forEach(w=>{ html+=`<span class="chip sight">${esc(w)}</span>`; });
+    html+=`</div><div class="script">👪 <b>Ask:</b> Flash each one — can your child say it in under 3 seconds?</div></div>`;
+  }
+  if((d.vocab||[]).length){
+    html += `<div class="sec"><div class="st">💡 Know the meaning</div><div class="vocab">`;
+    d.vocab.forEach(v=>{ html+=`<b>${esc(v.word)}</b> — ${esc(v.meaning)}<br>`; });
+    html+=`</div><div class="script">👪 <b>Ask it backwards:</b> "What word means <i>${esc(d.vocab[0].meaning)}</i>?"</div></div>`;
+  }
+  const games=[];
+  if(soundLetter) games.push(`Short-<b>${soundLetter}</b> hunt: find 5 things with the short <b>${soundLetter}</b> sound (${demo.join(', ')})`);
+  games.push(`Sight-word speed round — beat your own time`);
+  if((d.vocab||[]).length) games.push(`Act out <i>${d.vocab.map(v=>esc(v.word)).slice(0,3).join('</i>, <i>')}</i>`);
+  else games.push(`Make a silly sentence using 3 of the words out loud`);
+  html += funSec(games);
+  html += finishSec(`your child can read the sound-out words smoothly and recall the "just know it" words fast. End on a high-five, not a drill.`);
+  html += `</div>`;
+  return {html, gate:renderGate(checks)};
+}
+
+const ORDER=['first','next','then','finally','after that','last','secondly','later'];
+function highlightOrder(line){
+  let out=esc(line);
+  [['finally','finally'],['first','first'],['next','next'],['then','then']].forEach(([w,cls])=>{
+    const re=new RegExp('\\b('+w+')\\b','i'); out=out.replace(re,m=>`<span class="ow ${cls}">${m}</span>`);
+  });
+  return out;
+}
+function buildStoryCard(d){
+  const checks=[];
+  const lines=(d.story||'').split(/\n+/).map(s=>s.trim()).filter(Boolean);
+  checks.push({ok:true,msg:`Full text: all ${lines.length} sentence(s) shown — nothing skipped.`});
+  const hasOrder = lines.some(l=>ORDER.some(o=>new RegExp('\\b'+o+'\\b','i').test(l)));
+  checks.push({ok:true,msg: hasOrder?`Task type: sequencing — order words highlighted as clues.`:`Task type: comprehension — read together, then find evidence in the text.`});
+  checks.push({ok:true,msg:`Answers hidden behind a tap so the child does the thinking.`});
+  checks.push({ok:true,msg:`Clutter: no codes or jargon; parent-voice scripts only.`});
+  let html=`<div class="coach"><div class="top read"><div class="for">👪 For you, Mom/Dad · 5–10 min · keep it fun</div><div class="h">${esc(d.title||'Reading together')} 📖</div><div class="s">${hasOrder?'Put the story in order':'Read it together, then find the clues'}</div></div>`;
+  html += warmSec(`Say: <i>"Let's play detective! This story has ${hasOrder?'secret ORDER words hiding in it — First, Next, Then, Finally':'clues hiding in the words'}. Ready to hunt for them?"</i>`);
+  html += `<div class="sec read"><div class="st">② Read it together <span style="font-weight:500;font-size:12px;color:var(--muted)">· 2 min 📖</span></div><div class="sub">Read out loud with your child. ${hasOrder?'The colored words are the order clues.':''}</div><div class="story">`;
+  html += lines.map(l=> hasOrder?highlightOrder(l):esc(l)).join('<br>');
+  html += `</div></div>`;
+  if((d.questions||[]).length){
+    html += `<div class="sec help"><div class="st">③ Help, don't tell <span style="font-weight:500;font-size:12px;color:var(--muted)">· 3 min 💬</span></div><div class="sub">When your child is stuck, point them to a clue word — don't give the answer. Celebrate when they get it.</div>`;
+    d.questions.forEach((q,i)=>{
+      const qText = (q && typeof q==='object') ? (q.q||'') : q;
+      const qAns  = (q && typeof q==='object') ? (q.answer||'') : '';
+      const qCue  = (q && typeof q==='object' && q.cue) ? q.cue
+                    : (hasOrder ? `🕵️ Find the next order word in the story.` : `🕵️ Point to the part of the story that talks about this.`);
+      const ansHtml = qAns ? esc(qAns) : `(look together at the part of the story this asks about)`;
+      html += `<div class="qbox"><b>${i+1}.</b> ${esc(qText)}<div class="cue">${esc(qCue)}</div>${reveal(ansHtml)}</div>`;
+    });
+    html += `</div>`;
+  }
+  const games=[];
+  if(hasOrder){ games.push(`Retell making a sandwich using First / Next / Then / Finally`); games.push(`Write the steps, shuffle them, have your child re-order`); games.push(`"Prove it" — point to the exact line in the story for each answer`); }
+  else { games.push(`Ask your child to retell the story in their own words`); games.push(`"Prove it" — for each answer, point to the line in the story`); games.push(`Draw the favorite part together`); }
+  html += funSec(games);
+  html += finishSec(hasOrder?`your child can retell the story in order using the clue words. End on the high-five.`:`your child can retell the main idea and point to evidence in the text. End on a win.`);
+  html += `</div>`;
+  return {html, gate:renderGate(checks)};
+}
+
+/* MATH card */
+function buildMathCard(d){
+  const checks=[];
+  const probs=(d.problems||[]).filter(p=>p&&p.q);
+  checks.push({ok:true,msg:`Subject: math — guiding questions, parent helps the child reason to the answer.`});
+  checks.push({ok:true,msg:`Found ${probs.length} problem(s); answers hidden behind a tap so the child does the thinking.`});
+  checks.push({ok:false,msg:`Heads-up: math reading is newer than reading sheets — double-check numbers against the page before trusting them.`});
+  checks.push({ok:true,msg:`Clutter: plain-English steps, no math jargon on the card.`});
+
+  let html=`<div class="coach"><div class="top" style="background:linear-gradient(135deg,#2b8a3e,#51cf66)"><div class="for">👪 For you, Mom/Dad · math · ~10 min</div><div class="h">${esc(d.topic||'Math homework')} ✖️</div><div class="s">Help your child reason it out — don't just give the number</div></div>`;
+  html += warmSec(`Say: <i>"Let's be math detectives. I won't give you the answer — I'll give you a clue, and you figure it out. Ready?"</i>`);
+  if(probs.length){
+    html += `<div class="sec help"><div class="st">③ Help, don't tell <span style="font-weight:500;font-size:12px;color:var(--muted)">💬</span></div><div class="sub">For each one, read the clue aloud and let your child try first.</div>`;
+    probs.forEach((p,i)=>{
+      html += `<div class="qbox"><b>${i+1}.</b> ${esc(p.q)}`;
+      if(p.how) html += `<div class="cue">🕵️ ${esc(p.how)}</div>`;
+      html += `${reveal(esc(p.answer||'(work it out together)'))}</div>`;
+    });
+    html += `</div>`;
+  }
+  html += funSec([
+    `Use real snacks or toys to act out the problem`,
+    `Let your child "teach it back" to you — explaining proves they get it`,
+    `Celebrate the thinking, not just the right number`
+  ]);
+  html += finishSec(`your child can explain WHY the answer works, not just state it. End on a high-five.`);
+  html += `</div>`;
+  return {html, gate:renderGate(checks)};
+}
+
+/* ---------------- PHOTO → GEMINI → DATA ---------------- */
+function readFileAsDataUrl(file){
+  return new Promise((resolve,reject)=>{
+    const r=new FileReader();
+    r.onload=()=>resolve(r.result);
+    r.onerror=()=>reject(new Error('could not read the image'));
+    r.readAsDataURL(file);
+  });
+}
+
+async function onPhoto(ev){
+  const files = Array.from(ev.target.files||[]);
+  if(!files.length) return;
+  hideErr();
+  const key = (localStorage.getItem(KEY_STORE)||'').trim();
+  if(!key){ showErr('Save your Gemini key first (box above).'); return; }
+
+  // show first image as preview
+  try{
+    const firstUrl = await readFileAsDataUrl(files[0]);
+    document.getElementById('preview').src = firstUrl;
+    document.getElementById('preview').style.display='block';
+  }catch(e){}
+
+  const spinLabel = document.querySelector('#spin div');
+  document.getElementById('spin').classList.add('show');
+
+  const cards = [];
+  for(let i=0;i<files.length;i++){
+    if(files.length>1 && spinLabel) spinLabel.textContent = 'Reading page '+(i+1)+' of '+files.length+'…';
+    try{
+      const dataUrl = await readFileAsDataUrl(files[i]);
+      const base64 = dataUrl.split(',')[1];
+      const mime = (dataUrl.match(/^data:(.*?);/)||[])[1] || 'image/jpeg';
+      const data = await callGemini(key, base64, mime);
+      if(data){ cards.push(data); }
+      else { cards.push({type:'_error', _page:i+1, _msg:'could not read this page'}); }
+    }catch(e){
+      cards.push({type:'_error', _page:i+1, _msg:String(e&&e.message||e)});
+    }
+  }
+
+  document.getElementById('spin').classList.remove('show');
+  if(spinLabel) spinLabel.textContent = 'Reading the worksheet…';
+
+  // reset inputs so the same files can be re-picked
+  document.getElementById('cameraInput').value='';
+  document.getElementById('libraryInput').value='';
+
+  if(!cards.length){ showErr('Could not read any of those photos. Try a clearer, straight-on shot in good light.'); return; }
+  renderCards(cards);
+}
+
+const EXTRACT_PROMPT = `You are reading a photo of a child's ELEMENTARY homework worksheet (US grades K-3, Florida).
+Return ONLY a JSON object, no markdown, no commentary. Choose the ONE type that best fits.
+
+TYPE 1 — WORD LIST / spelling / phonics (a list of words to spell or sound out):
+{"type":"word","sound":"short u | long a | '' if none stated","spell":["every spelling/decodable word exactly as printed"],"sight":["high-frequency / 'words to know' words"],"vocab":[{"word":"w","meaning":"kid-friendly meaning"}]}
+
+TYPE 2 — READING passage with questions (a story PLUS comprehension or phonics questions, e.g. "circle short-u words", "who are the characters", story map):
+{"type":"story","title":"title if any","story":"EVERY sentence of the passage, one per line, \\n separated, nothing skipped","questions":[{"q":"each question exactly as printed","answer":"the CORRECT answer to this question, taken from the story (for 'circle the short-u words' list the actual words; for a comprehension question give the real answer, not a hint)","cue":"ONE short clue a parent can give to guide the child without handing over the answer"}],"sound":"a phonics sound the questions ask about, e.g. 'short u', else ''"}
+
+TYPE 3 — MATH worksheet (multiplication, factors, tables, number problems):
+{"type":"math","topic":"short topic, e.g. 'missing factors & multiplication'","problems":[{"q":"the question text as printed","answer":"the correct answer","how":"ONE short plain-English way a parent can guide the child to it, no jargon"}]}
+
+Rules: copy text EXACTLY as printed. Do NOT invent content. If a field is unknown use "" or []. For a reading passage, include the COMPLETE story text, not just the lines the questions touch, AND give the real correct answer to every question (never a hint in place of the answer). For math, solve each problem correctly and give a parent-friendly 'how', not just the answer.`;
+
+/* Sends ONE image to Gemini, retries on transient errors, returns parsed data (or null). */
+async function callGemini(key, base64, mime){
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key='+encodeURIComponent(key);
+  const body = {
+    contents:[{ parts:[ {text:EXTRACT_PROMPT}, {inline_data:{mime_type:mime, data:base64}} ] }],
+    generationConfig:{ temperature:0, responseMimeType:'application/json' }
+  };
+  const spinLabel = document.querySelector('#spin div');
+  const MAX_TRIES = 4;            // 1 try + 3 retries
+  const sleep = ms => new Promise(r=>setTimeout(r,ms));
+  let res, json;
+  for(let attempt=1; attempt<=MAX_TRIES; attempt++){
+    res = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    json = await res.json();
+    if((res.status===429 || res.status===500 || res.status===503) && attempt<MAX_TRIES){
+      const wait = attempt*8;  // 8s, 16s, 24s — rides out a free-tier cooldown
+      if(spinLabel) spinLabel.textContent = 'Google is busy — retrying in '+wait+'s… (try '+(attempt+1)+' of '+MAX_TRIES+')';
+      await sleep(wait*1000);
+      continue;
+    }
+    break;
+  }
+  if(!res.ok){
+    const raw = (json && json.error && json.error.message) || ('HTTP '+res.status);
+    let friendly;
+    if(res.status===429 || res.status===503 || res.status===500){
+      friendly = 'Google\u2019s servers are busy or your free quota is cooling down, even after automatic retries. Not a problem with your photo or key \u2014 wait about a minute and tap again.<br><br><span style="font-size:11px;opacity:.7;">Details: '+esc(raw)+'</span>';
+    } else if(res.status===400 || res.status===403){
+      friendly = 'Your Gemini key was rejected. Double-check you pasted the whole key, or create a fresh one at Google AI Studio.';
+    } else {
+      friendly = 'Gemini could not read it: '+esc(raw)+'<br><br>Try a clearer photo, or tap the button again.';
+    }
+    showErr(friendly);
+    return null;
+  }
+  let text='';
+  try{ text = json.candidates[0].content.parts.map(p=>p.text||'').join(''); }catch(e){ text=''; }
+  let data=null;
+  try{ data = JSON.parse(text); }catch(e){
+    const m = text.match(/\{[\s\S]*\}/); if(m){ try{ data=JSON.parse(m[0]); }catch(e2){} }
+  }
+  if(!data || !data.type) return null;
+  return data;
+}
+
+/* Build the card HTML+gate for one worksheet's data. */
+function buildFromData(data){
+  if(data.type==='word'){
+    return buildWordCard({ sound:data.sound||'', spell:data.spell||[], sight:data.sight||[], vocab:data.vocab||[] });
+  } else if(data.type==='math'){
+    return buildMathCard({ topic:data.topic||'', problems:data.problems||[] });
+  }
+  return buildStoryCard({ title:data.title||'', story:data.story||'', questions:data.questions||[], sound:data.sound||'' });
+}
+
+/* Render one or many cards onto the result screen, stacked. */
+function renderCards(cards){
+  const multi = cards.length>1;
+  let gateHtml = '';
+  let cardsHtml = '';
+  cards.forEach((data,i)=>{
+    if(data.type==='_error'){
+      cardsHtml += `<div class="err" style="display:block;margin-bottom:16px">Page ${data._page}: couldn't read this one — ${esc(data._msg||'')}. Try a clearer photo of just this page.</div>`;
+      return;
+    }
+    const out = buildFromData(data);
+    if(multi){
+      cardsHtml += `<div style="font-size:12px;font-weight:800;color:var(--muted);margin:4px 0 8px;letter-spacing:.3px">PAGE ${i+1} OF ${cards.length}</div>`;
+    }
+    cardsHtml += out.html;
+    // show the accuracy gate for the first card only (keeps the top clean); others inline a slim note
+    if(i===0) gateHtml = out.gate;
+  });
+  document.getElementById('gate').innerHTML = gateHtml;
+  document.getElementById('cardOut').innerHTML = cardsHtml;
+  go('result');
+}
+
+/* ---------------- init ---------------- */
+loadKey();
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+# Netlify config — no build step, just publish this folder as-is.
+[build]
+  publish = "."
+
+# Never cache index.html, so a new deploy shows up immediately on phones.
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, max-age=0"

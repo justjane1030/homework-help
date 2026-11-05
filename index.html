@@ -123,7 +123,7 @@
 
 <header class="appbar">
   <div class="title">📚 Homework Helper — Photo</div>
-  <div class="sub">Snap the worksheet → get a parent-coach card · bring-your-own-key (free) · build v7 (answers pinned · multi-page)</div>
+  <div class="sub">Snap the worksheet → get a parent-coach card · bring-your-own-key (free) · build v8 (key box hides once saved)</div>
 </header>
 
 <div class="wrap">
@@ -131,7 +131,10 @@
   <div id="home" class="screen active">
 
     <!-- KEY SETUP -->
-    <div class="keybox">
+    <div id="keyLink" style="display:none;text-align:right;margin:-4px 2px 10px;font-size:12px">
+      <a href="#" onclick="showKeyBox();return false;" style="color:var(--muted)">🔑 change key</a>
+    </div>
+    <div class="keybox" id="keyBox">
       <div class="row">🔑 Your Google Gemini key <span id="keyStatus" class="status no">not set</span></div>
       <div class="keyfields">
         <input type="password" id="keyInput" placeholder="Paste your Gemini API key here" autocomplete="off">
@@ -207,6 +210,13 @@ function setKeyStatus(ok){
   el.textContent = ok?'saved ✓':'not set';
   el.className = 'status '+(ok?'ok':'no');
   document.getElementById('snapBtn').disabled = !ok;
+  // once a key is saved, tuck the key box away (small "change key" link stays)
+  document.getElementById('keyBox').style.display = ok ? 'none' : 'block';
+  document.getElementById('keyLink').style.display = ok ? 'block' : 'none';
+}
+function showKeyBox(){
+  document.getElementById('keyBox').style.display='block';
+  document.getElementById('keyLink').style.display='none';
 }
 function saveKey(){
   const k=document.getElementById('keyInput').value.trim();

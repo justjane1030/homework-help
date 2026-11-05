@@ -123,7 +123,7 @@
 
 <header class="appbar">
   <div class="title">📚 Homework Helper — Photo</div>
-  <div class="sub">Snap the worksheet → get a parent-coach card · bring-your-own-key (free) · build v8 (key box hides once saved)</div>
+  <div class="sub">Snap the worksheet → get a parent-coach card · build v9</div>
 </header>
 
 <div class="wrap">
@@ -186,7 +186,7 @@
   <div class="footer">
     Prototype · grounded in <code>reading-coach-basis.md</code> (Florida B.E.S.T. · Science of Reading).
     Answers are hidden behind a tap so the child does the thinking.
-    Reading is done by Google Gemini using <b>your</b> key.
+    Worksheets are read by Google Gemini. Photos are not stored.
   </div>
 </div>
 
@@ -200,17 +200,26 @@ function go(id){
 
 /* ---------------- key storage (device-only) ---------------- */
 const KEY_STORE='hh_gemini_key';
+// Owner mode: open the page with ?owner at the end of the address to see the key box.
+// Everyone else never sees it and scans through the server-side key.
+const OWNER = /[?&]owner\b/.test(location.search);
 function loadKey(){
   const k=localStorage.getItem(KEY_STORE)||'';
-  if(k){ document.getElementById('keyInput').value=k; setKeyStatus(true); }
+  if(k){ document.getElementById('keyInput').value=k; }
+  setKeyStatus(!!k);
   return k;
 }
 function setKeyStatus(ok){
   const el=document.getElementById('keyStatus');
   el.textContent = ok?'saved ✓':'not set';
   el.className = 'status '+(ok?'ok':'no');
-  document.getElementById('snapBtn').disabled = !ok;
-  // once a key is saved, tuck the key box away (small "change key" link stays)
+  document.getElementById('snapBtn').disabled = false;
+  // key UI is owner-only; regular users see none of it
+  if(!OWNER){
+    document.getElementById('keyBox').style.display='none';
+    document.getElementById('keyLink').style.display='none';
+    return;
+  }
   document.getElementById('keyBox').style.display = ok ? 'none' : 'block';
   document.getElementById('keyLink').style.display = ok ? 'block' : 'none';
 }
@@ -402,12 +411,28 @@ function readFileAsDataUrl(file){
   });
 }
 
+/* Downscale big phone photos (max 1800px, JPEG) so uploads are small and fast. */
+function shrinkImage(dataUrl){
+  return new Promise(resolve=>{
+    const img=new Image();
+    img.onload=()=>{
+      const MAX=1800, s=Math.min(1, MAX/Math.max(img.width,img.height));
+      const c=document.createElement('canvas');
+      c.width=Math.round(img.width*s); c.height=Math.round(img.height*s);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      resolve(c.toDataURL('image/jpeg',0.85));
+    };
+    img.onerror=()=>resolve(dataUrl);
+    img.src=dataUrl;
+  });
+}
+
 async function onPhoto(ev){
   const files = Array.from(ev.target.files||[]);
   if(!files.length) return;
   hideErr();
+  // owner's own key (if saved on this device) is used directly; everyone else goes through the server
   const key = (localStorage.getItem(KEY_STORE)||'').trim();
-  if(!key){ showErr('Save your Gemini key first (box above).'); return; }
 
   // show first image as preview
   try{
@@ -423,9 +448,9 @@ async function onPhoto(ev){
   for(let i=0;i<files.length;i++){
     if(files.length>1 && spinLabel) spinLabel.textContent = 'Reading page '+(i+1)+' of '+files.length+'…';
     try{
-      const dataUrl = await readFileAsDataUrl(files[i]);
+      const dataUrl = await shrinkImage(await readFileAsDataUrl(files[i]));
       const base64 = dataUrl.split(',')[1];
-      const mime = (dataUrl.match(/^data:(.*?);/)||[])[1] || 'image/jpeg';
+      const mime = 'image/jpeg';
       const data = await callGemini(key, base64, mime);
       if(data){ cards.push(data); }
       else { cards.push({type:'_error', _page:i+1, _msg:'could not read this page'}); }
@@ -461,19 +486,26 @@ Rules: copy text EXACTLY as printed. Do NOT invent content. If a field is unknow
 
 /* Sends ONE image to Gemini, retries on transient errors, returns parsed data (or null). */
 async function callGemini(key, base64, mime){
-  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key='+encodeURIComponent(key);
-  const body = {
-    contents:[{ parts:[ {text:EXTRACT_PROMPT}, {inline_data:{mime_type:mime, data:base64}} ] }],
-    generationConfig:{ temperature:0, responseMimeType:'application/json' }
-  };
+  // Owner key saved on this device -> call Google directly. Otherwise -> server function (key stays on the server).
+  let url, body;
+  if(key){
+    url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key='+encodeURIComponent(key);
+    body = {
+      contents:[{ parts:[ {text:EXTRACT_PROMPT}, {inline_data:{mime_type:mime, data:base64}} ] }],
+      generationConfig:{ temperature:0, responseMimeType:'application/json' }
+    };
+  } else {
+    url = '/.netlify/functions/scan';
+    body = { mime:mime, data:base64 };
+  }
   const spinLabel = document.querySelector('#spin div');
   const MAX_TRIES = 4;            // 1 try + 3 retries
   const sleep = ms => new Promise(r=>setTimeout(r,ms));
   let res, json;
   for(let attempt=1; attempt<=MAX_TRIES; attempt++){
     res = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    json = await res.json();
-    if((res.status===429 || res.status===500 || res.status===503) && attempt<MAX_TRIES){
+    json = await res.json().catch(()=>({}));
+    if([429,500,502,503,504].includes(res.status) && attempt<MAX_TRIES){
       const wait = attempt*8;  // 8s, 16s, 24s — rides out a free-tier cooldown
       if(spinLabel) spinLabel.textContent = 'Google is busy — retrying in '+wait+'s… (try '+(attempt+1)+' of '+MAX_TRIES+')';
       await sleep(wait*1000);

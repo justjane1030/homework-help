@@ -2,6 +2,9 @@
 [build]
   publish = "."
 
+[functions]
+  directory = "netlify/functions"
+
 # Never cache index.html, so a new deploy shows up immediately on phones.
 [[headers]]
   for = "/index.html"

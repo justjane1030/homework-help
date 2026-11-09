@@ -117,13 +117,34 @@
   .err{background:#fff0f0;border:1px solid #ffc9c9;color:#c92a2a;border-radius:12px;padding:12px;font-size:13.5px;margin-top:10px;display:none}
   .footer{text-align:center;font-size:11px;color:var(--muted);margin-top:8px;padding:0 16px 20px}
   .footer a{color:var(--blue)}
+
+  /* Quick Check game (kid-facing) */
+  .qz-top{display:flex;align-items:center;gap:10px;margin:2px 0 14px}
+  .qz-x{border:0;background:var(--card);border:1.5px solid var(--line);border-radius:50%;width:38px;height:38px;font-size:16px;cursor:pointer;color:var(--muted)}
+  .qz-bar{flex:1;height:12px;background:#e3e9f2;border-radius:999px;overflow:hidden}
+  .qz-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--pink),var(--yellow));border-radius:999px;transition:width .3s ease}
+  .qz-stars{font-weight:800;font-size:15px}
+  .qz-card{background:var(--card);border-radius:20px;box-shadow:var(--shadow);border:1px solid var(--line);padding:20px 16px}
+  .qz-n{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px}
+  .qz-q{font-size:22px;font-weight:800;line-height:1.35;margin-bottom:12px}
+  .qz-say{border:0;background:#e7f0ff;color:var(--blue);font-weight:700;font-size:15px;padding:10px 16px;border-radius:999px;cursor:pointer;margin-bottom:12px}
+  .qz-choices{display:grid;gap:10px}
+  .qz-c{border:2.5px solid var(--line);background:#fff;color:var(--fg);border-radius:16px;padding:16px;font-size:20px;font-weight:700;cursor:pointer;text-align:center;font-family:inherit;transition:transform .08s ease}
+  .qz-c:active{transform:scale(.98)}
+  .qz-c.right{background:#d3f9d8;border-color:#40c057;color:#176b33}
+  .qz-c.wrong{background:#ffe3e3;border-color:#fa5252;color:#c92a2a}
+  .qz-fb{min-height:28px;margin-top:14px;font-size:17px;font-weight:800;text-align:center}
+  .qz-next{margin-top:8px}
+  .qz-end{text-align:center}
+  .qz-big{font-size:64px;line-height:1.1;margin:6px 0}
+  .qz-note{background:#fff9db;border:1px solid #ffe8a3;border-radius:12px;padding:12px;font-size:13.5px;text-align:left;margin-top:14px;line-height:1.7}
 </style>
 </head>
 <body>
 
 <header class="appbar">
   <div class="title">📚 Homework Helper — Photo</div>
-  <div class="sub">Snap the worksheet → get a parent-coach card · build v9</div>
+  <div class="sub">Snap the worksheet → get a parent-coach card · build v10 (Quick Check game)</div>
 </header>
 
 <div class="wrap">
@@ -181,6 +202,11 @@
     <div class="backbar"><button onclick="go('home')">← Scan another</button></div>
     <div id="gate" class="gate"></div>
     <div id="cardOut"></div>
+  </div>
+
+  <!-- ============ QUICK CHECK GAME ============ -->
+  <div id="quiz" class="screen">
+    <div id="quizBody"></div>
   </div>
 
   <div class="footer">
@@ -482,6 +508,8 @@ TYPE 2 — READING passage with questions (a story PLUS comprehension or phonics
 TYPE 3 — MATH worksheet (multiplication, factors, tables, number problems):
 {"type":"math","topic":"short topic, e.g. 'missing factors & multiplication'","problems":[{"q":"the question text as printed","answer":"the correct answer","how":"ONE short plain-English way a parent can guide the child to it, no jargon"}]}
 
+QUIZ (for ALL types): also add a top-level key "quiz" with 5 short, fun, kid-friendly multiple-choice questions that check whether the child really learned what THIS worksheet taught (word meanings, the phonics sound, who/where/what happened in the story, the order of events, or the math idea). Each item: {"q":"question a 3rd grader can read","choices":["A","B","C"],"answer":"must be EXACTLY one of the choices","say":"optional: one word to read aloud, only for 'which word did you hear' questions, else ''"}. Use 2 or 3 choices, exactly ONE correct. Use only facts that are on the worksheet. Never make the correct answer obvious from the wording.
+
 Rules: copy text EXACTLY as printed. Do NOT invent content. If a field is unknown use "" or []. For a reading passage, include the COMPLETE story text, not just the lines the questions touch, AND give the real correct answer to every question (never a hint in place of the answer). For math, solve each problem correctly and give a parent-friendly 'how', not just the answer.`;
 
 /* Sends ONE image to Gemini, retries on transient errors, returns parsed data (or null). */
@@ -548,6 +576,7 @@ function buildFromData(data){
 
 /* Render one or many cards onto the result screen, stacked. */
 function renderCards(cards){
+  QUIZZES=[];
   const multi = cards.length>1;
   let gateHtml = '';
   let cardsHtml = '';
@@ -561,11 +590,145 @@ function renderCards(cards){
       cardsHtml += `<div style="font-size:12px;font-weight:800;color:var(--muted);margin:4px 0 8px;letter-spacing:.3px">PAGE ${i+1} OF ${cards.length}</div>`;
     }
     cardsHtml += out.html;
+    const qz = makeQuiz(data);
+    QUIZZES[i] = qz;
+    if(qz.length>=2){
+      cardsHtml += `<button class="btn pink" onclick="startQuiz(${i})"><span class="big">🎮 Homework done? Play Quick Check!</span><span class="small">${qz.length} quick questions for your child</span></button><div style="height:14px"></div>`;
+    }
     // show the accuracy gate for the first card only (keeps the top clean); others inline a slim note
     if(i===0) gateHtml = out.gate;
   });
   document.getElementById('gate').innerHTML = gateHtml;
   document.getElementById('cardOut').innerHTML = cardsHtml;
+  go('result');
+}
+
+/* ---------------- QUICK CHECK GAME ---------------- */
+let QUIZZES=[];
+let G=null;   // current game state
+
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+/* Keep only well-formed questions: 2-4 unique choices and the answer must be one of them. */
+function cleanQuiz(raw){
+  const out=[];
+  (Array.isArray(raw)?raw:[]).forEach(x=>{
+    if(!x||typeof x.q!=='string'||!x.q.trim()||!Array.isArray(x.choices)) return;
+    const ch=[...new Set(x.choices.map(c=>String(c).trim()).filter(Boolean))];
+    if(ch.length<2||ch.length>4) return;
+    const ans=ch.find(c=>c.toLowerCase()===String(x.answer||'').trim().toLowerCase());
+    if(!ans) return;
+    out.push({q:x.q.trim(), choices:ch, answer:ans, say:(typeof x.say==='string'?x.say.trim():'')});
+  });
+  return out;
+}
+
+/* Word sheets get 3 "tap the word you hear" questions built locally (no AI guesswork), then AI questions. */
+function makeQuiz(data){
+  const qs=[];
+  if(data.type==='word'){
+    const soundName=(data.sound||'').toLowerCase().trim();
+    const letter=VOWEL[soundName]?VOWEL[soundName].letter:null;
+    const pool=[];
+    (data.spell||[]).forEach(w=>{
+      const lw=String(w).toLowerCase();
+      if(SIGHT.has(lw)) return;
+      if(letter && !matchesShortVowel(w,letter).ok) return;
+      pool.push(String(w));
+    });
+    const allWords=[...new Set([...pool,...(data.sight||[]).map(String)])];
+    if(allWords.length>=3){
+      shuffle(allWords).slice(0,3).forEach(w=>{
+        const others=shuffle(allWords.filter(x=>x!==w)).slice(0,2);
+        qs.push({q:'Tap the word you hear!', choices:[w,...others], answer:w, say:w});
+      });
+    }
+  }
+  return qs.concat(cleanQuiz(data.quiz)).slice(0,7);
+}
+
+function startQuiz(i){
+  const qs=QUIZZES[i];
+  if(!qs||!qs.length) return;
+  G={src:i, total:qs.length, queue:qs.map(q=>({...q,choices:shuffle(q.choices)})),
+     idx:0, stars:0, missed:[], firstMissed:[], retry:false, answered:false};
+  go('quiz'); showQ();
+}
+
+function showQ(){
+  const q=G.queue[G.idx]; G.answered=false;
+  const pct=Math.round(G.idx/G.queue.length*100);
+  let h=`<div class="qz-top"><button class="qz-x" onclick="quitQuiz()" aria-label="Close game">✕</button><div class="qz-bar"><i style="width:${pct}%"></i></div><div class="qz-stars">⭐ ${G.stars}</div></div>`;
+  h+=`<div class="qz-card"><div class="qz-n">Question ${G.idx+1} of ${G.queue.length}${G.retry?' · let\u2019s try again':''}</div><div class="qz-q">${esc(q.q)}</div>`;
+  h+=`<button class="qz-say" onclick="sayIt()">🔊 Hear it</button>`;
+  h+=`<div class="qz-choices">`+q.choices.map((c,k)=>`<button class="qz-c" onclick="pick(${k})">${esc(c)}</button>`).join('')+`</div><div id="qzFb" class="qz-fb" aria-live="polite"></div><div id="qzNext"></div></div>`;
+  document.getElementById('quizBody').innerHTML=h;
+  window.scrollTo(0,0);
+  if(q.say) setTimeout(sayIt,250);
+}
+
+function sayIt(){
+  const q=G&&G.queue[G.idx];
+  if(!q||!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(q.say||q.q);
+  u.lang='en-US'; u.rate=0.85;
+  speechSynthesis.speak(u);
+}
+
+function pick(k){
+  if(G.answered) return;
+  G.answered=true;
+  const q=G.queue[G.idx];
+  const ok=q.choices[k]===q.answer;
+  document.querySelectorAll('.qz-c').forEach((b,j)=>{
+    b.disabled=true;
+    if(q.choices[j]===q.answer) b.classList.add('right');
+    else if(j===k) b.classList.add('wrong');
+  });
+  const cheers=['Yes! ⭐','Great job! ⭐','You got it! ⭐','Awesome! ⭐'];
+  if(ok){ if(!G.retry) G.stars++; }
+  else if(!G.retry){ G.missed.push(q); }
+  const fb=document.getElementById('qzFb');
+  fb.style.color = ok ? '#176b33' : '#c92a2a';
+  fb.innerHTML = ok ? cheers[Math.floor(Math.random()*cheers.length)]
+                    : 'Good try! The answer is <b>'+esc(q.answer)+'</b>';
+  const last = (G.idx===G.queue.length-1);
+  document.getElementById('qzNext').innerHTML = `<button class="btn primary qz-next" onclick="nextQ()">${last?'Finish':'Next →'}</button>`;
+}
+
+function nextQ(){
+  G.idx++;
+  if(G.idx<G.queue.length) return showQ();
+  if(!G.retry && G.missed.length){
+    G.firstMissed=G.missed.slice();
+    G.queue=G.missed.map(q=>({...q,choices:shuffle(q.choices)}));
+    G.missed=[]; G.idx=0; G.retry=true;
+    return showQ();
+  }
+  endQuiz();
+}
+
+function endQuiz(){
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  const pct=G.stars/G.total;
+  const face = pct===1?'🏆':(pct>=0.6?'🎉':'💪');
+  const msg  = pct===1?'Perfect! You really know it!':(pct>=0.6?'Great work! Almost there!':'Nice try! Let\u2019s practice a bit more together.');
+  let h=`<div class="qz-card qz-end"><div class="qz-big">${face}</div><div class="qz-q">${msg}</div>`;
+  h+=`<div style="font-size:26px;font-weight:800;margin-bottom:6px">${'⭐'.repeat(G.stars)}${'☆'.repeat(G.total-G.stars)}</div>`;
+  h+=`<div style="color:var(--muted);font-size:14px">${G.stars} of ${G.total} right on the first try</div>`;
+  if(G.firstMissed.length){
+    h+=`<div class="qz-note"><b>👪 For you, Mom/Dad:</b> these were tricky the first time, so practice them together:<br>`
+      + G.firstMissed.map(q=>'• '+esc(q.q)+' → <b>'+esc(q.answer)+'</b>').join('<br>') + `</div>`;
+  }
+  h+=`<div class="qz-note">👪 <b>One more check:</b> ask your child to explain one thing from the homework in their own words. Tapping an answer shows recognition; explaining shows understanding.</div>`;
+  h+=`<button class="btn pink" onclick="startQuiz(${G.src})">🔁 Play again</button><button class="btn ghost" onclick="quitQuiz()">← Back to the tips</button></div>`;
+  document.getElementById('quizBody').innerHTML=h;
+  window.scrollTo(0,0);
+}
+
+function quitQuiz(){
+  if('speechSynthesis' in window) speechSynthesis.cancel();
   go('result');
 }
 

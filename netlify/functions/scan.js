@@ -12,6 +12,8 @@ TYPE 2 — READING passage with questions (a story PLUS comprehension or phonics
 TYPE 3 — MATH worksheet (multiplication, factors, tables, number problems):
 {"type":"math","topic":"short topic, e.g. 'missing factors & multiplication'","problems":[{"q":"the question text as printed","answer":"the correct answer","how":"ONE short plain-English way a parent can guide the child to it, no jargon"}]}
 
+QUIZ (for ALL types): also add a top-level key "quiz" with 5 short, fun, kid-friendly multiple-choice questions that check whether the child really learned what THIS worksheet taught (word meanings, the phonics sound, who/where/what happened in the story, the order of events, or the math idea). Each item: {"q":"question a 3rd grader can read","choices":["A","B","C"],"answer":"must be EXACTLY one of the choices","say":"optional: one word to read aloud, only for 'which word did you hear' questions, else ''"}. Use 2 or 3 choices, exactly ONE correct. Use only facts that are on the worksheet. Never make the correct answer obvious from the wording.
+
 Rules: copy text EXACTLY as printed. Do NOT invent content. If a field is unknown use "" or []. For a reading passage, include the COMPLETE story text, not just the lines the questions touch, AND give the real correct answer to every question (never a hint in place of the answer). For math, solve each problem correctly and give a parent-friendly 'how', not just the answer.`;
 
 // Tried in order; falls through to the next on busy/rate-limit/not-found.

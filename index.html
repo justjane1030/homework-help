@@ -144,7 +144,7 @@
 
 <header class="appbar">
   <div class="title">📚 Homework Helper — Photo</div>
-  <div class="sub">Snap the worksheet → get a parent-coach card · build v10 (Quick Check game)</div>
+  <div class="sub">Snap the worksheet → get a parent-coach card · build v10.1 (Quick Check game)</div>
 </header>
 
 <div class="wrap">
@@ -533,6 +533,11 @@ async function callGemini(key, base64, mime){
   for(let attempt=1; attempt<=MAX_TRIES; attempt++){
     res = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     json = await res.json().catch(()=>({}));
+    // setup problem, not Google being busy: stop retrying and say so plainly
+    if(json && json.error && /Server key not set/i.test(json.error.message||'')){
+      showErr('This site is missing its Gemini key. The owner needs to add <b>GEMINI_API_KEY</b> in Netlify (Environment variables) and redeploy.');
+      return null;
+    }
     if([429,500,502,503,504].includes(res.status) && attempt<MAX_TRIES){
       const wait = attempt*8;  // 8s, 16s, 24s — rides out a free-tier cooldown
       if(spinLabel) spinLabel.textContent = 'Google is busy — retrying in '+wait+'s… (try '+(attempt+1)+' of '+MAX_TRIES+')';

@@ -144,7 +144,7 @@
 
 <header class="appbar">
   <div class="title">📚 Homework Helper — Photo</div>
-  <div class="sub">Snap the worksheet → get a parent-coach card · made by Jane Gou · v10.4</div>
+  <div class="sub">Snap the worksheet → get a parent-coach card · made by Jane Gou · v10.5</div>
 </header>
 
 <div class="wrap">
@@ -604,7 +604,10 @@ function renderCards(cards){
     // show the accuracy gate for the first card only (keeps the top clean); others inline a slim note
     if(i===0) gateHtml = out.gate;
   });
-  document.getElementById('gate').innerHTML = gateHtml;
+  // The accuracy checks still run and still fix the card; the report itself is owner-only (open with ?owner).
+  const gateEl = document.getElementById('gate');
+  gateEl.innerHTML = OWNER ? gateHtml : '';
+  gateEl.style.display = OWNER ? 'block' : 'none';
   document.getElementById('cardOut').innerHTML = cardsHtml;
   go('result');
 }

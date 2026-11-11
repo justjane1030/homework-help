@@ -144,7 +144,7 @@
 
 <header class="appbar">
   <div class="title">📚 Homework Helper — Photo</div>
-  <div class="sub">Snap the worksheet → get a parent-coach card · made by Jane Gou · v10.5</div>
+  <div class="sub">Snap the worksheet → get a parent-coach card · made by Jane Gou · v11 preview (family codes)</div>
 </header>
 
 <div class="wrap">
@@ -169,6 +169,18 @@
         “Create API key” → copy &amp; paste it above. Free tier, no credit card for basic use.
         Your key is stored <b>only on this device</b> (your browser), never uploaded anywhere except Google when you scan.
       </div>
+    </div>
+
+    <!-- FAMILY CODE (parents) -->
+    <div class="keybox" id="famBox" style="display:none">
+      <div class="row">👪 Your family code</div>
+      <div class="help" id="famHelp" style="margin-top:4px">Ask the person who shared this app with you for your family code. You only type it once on this phone.</div>
+      <label for="famInput" style="position:absolute;left:-9999px">Family code</label>
+      <input type="text" id="famInput" placeholder="e.g. smith-reads" autocomplete="off" autocapitalize="none" spellcheck="false" style="margin-top:8px">
+      <button class="btn primary" style="margin-top:8px;padding:11px" onclick="saveFamily()">Save code</button>
+    </div>
+    <div id="famLink" style="display:none;text-align:right;margin:-4px 2px 10px;font-size:12px;color:var(--muted)">
+      👪 <span id="famName"></span> · <span id="famLeft"></span> · <a href="#" onclick="showFamilyBox();return false;" style="color:var(--muted)">change</a>
     </div>
 
     <div class="hero">
@@ -454,12 +466,65 @@ function shrinkImage(dataUrl){
   });
 }
 
+/* ---------------- FAMILY CODE + DAILY LIMIT (parents scanning through the server) ---------------- */
+const FAM_STORE='hh_family_code';
+const DAILY_LIMIT=10;   // scans per phone per day (soft limit; the family code is the real gate)
+function getFamily(){ return (localStorage.getItem(FAM_STORE)||'').trim().toLowerCase(); }
+function todayKey(){ const d=new Date(); return 'hh_scans_'+d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
+function scansToday(){ return parseInt(localStorage.getItem(todayKey())||'0',10)||0; }
+function addScan(){ localStorage.setItem(todayKey(), String(scansToday()+1)); refreshFamily(); }
+function refreshFamily(){
+  const own = (localStorage.getItem(KEY_STORE)||'').trim();
+  const fam = getFamily();
+  document.getElementById('famLink').style.display = (!own && fam) ? 'block' : 'none';
+  if(fam){
+    document.getElementById('famName').textContent = fam;
+    const left = Math.max(0, DAILY_LIMIT - scansToday());
+    document.getElementById('famLeft').textContent = left+' scan'+(left===1?'':'s')+' left today';
+  }
+}
+function showFamilyBox(msg){
+  document.getElementById('famBox').style.display='block';
+  document.getElementById('famLink').style.display='none';
+  if(msg) document.getElementById('famHelp').textContent = msg;
+  document.getElementById('famInput').value = getFamily();
+  document.getElementById('famInput').focus();
+}
+function saveFamily(){
+  const v = document.getElementById('famInput').value.trim().toLowerCase();
+  if(!v){ showErr('Type your family code first.'); return; }
+  localStorage.setItem(FAM_STORE, v);
+  document.getElementById('famBox').style.display='none';
+  hideErr(); refreshFamily();
+}
+function resetInputs(){
+  document.getElementById('cameraInput').value='';
+  document.getElementById('libraryInput').value='';
+}
+
 async function onPhoto(ev){
-  const files = Array.from(ev.target.files||[]);
+  let files = Array.from(ev.target.files||[]);
   if(!files.length) return;
   hideErr();
   // owner's own key (if saved on this device) is used directly; everyone else goes through the server
   const key = (localStorage.getItem(KEY_STORE)||'').trim();
+
+  if(!key){
+    if(!getFamily()){
+      showFamilyBox();
+      showErr('Enter your family code above first, then pick your photo again.');
+      resetInputs(); return;
+    }
+    const left = DAILY_LIMIT - scansToday();
+    if(left<=0){
+      showErr('You\u2019ve used today\u2019s '+DAILY_LIMIT+' scans on this phone. See you tomorrow! 🌙');
+      resetInputs(); return;
+    }
+    if(files.length>left){
+      showErr('You have '+left+' scan'+(left===1?'':'s')+' left today, so only the first '+left+' photo'+(left===1?'':'s')+' will be read.');
+      files = files.slice(0,left);
+    }
+  }
 
   // show first image as preview
   try{
@@ -479,6 +544,7 @@ async function onPhoto(ev){
       const base64 = dataUrl.split(',')[1];
       const mime = 'image/jpeg';
       const data = await callGemini(key, base64, mime);
+      if(!key && !getFamily()) break;   // family code was rejected: stop, the code box is showing
       if(data){ cards.push(data); }
       else { cards.push({type:'_error', _page:i+1, _msg:'could not read this page'}); }
     }catch(e){
@@ -530,10 +596,19 @@ async function callGemini(key, base64, mime){
   const spinLabel = document.querySelector('#spin div');
   const MAX_TRIES = 4;            // 1 try + 3 retries
   const sleep = ms => new Promise(r=>setTimeout(r,ms));
+  const headers = {'Content-Type':'application/json'};
+  if(!key) headers['X-Family-Code'] = getFamily();
   let res, json;
   for(let attempt=1; attempt<=MAX_TRIES; attempt++){
-    res = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    res = await fetch(url,{method:'POST',headers:headers,body:JSON.stringify(body)});
     json = await res.json().catch(()=>({}));
+    // wrong or missing family code: forget it and ask again (no retries)
+    if(res.status===401 && json && json.error && json.error.code==='family_code'){
+      localStorage.removeItem(FAM_STORE);
+      showFamilyBox('That family code didn\u2019t work. Check it with the person who shared the app, then type it again.');
+      showErr('That family code didn\u2019t work. Enter it again above.');
+      return null;
+    }
     // setup problem, not Google being busy: stop retrying and say so plainly
     if(json && json.error && /Server key not set/i.test(json.error.message||'')){
       showErr('This site is missing its Gemini key. The owner needs to add <b>GEMINI_API_KEY</b> in Netlify (Environment variables) and redeploy.');
@@ -560,6 +635,7 @@ async function callGemini(key, base64, mime){
     showErr(friendly);
     return null;
   }
+  if(!key) addScan();   // count only successful server scans toward the daily limit
   let text='';
   try{ text = json.candidates[0].content.parts.map(p=>p.text||'').join(''); }catch(e){ text=''; }
   let data=null;
@@ -743,6 +819,8 @@ function quitQuiz(){
 
 /* ---------------- init ---------------- */
 loadKey();
+if(!(localStorage.getItem(KEY_STORE)||'').trim() && !getFamily()) showFamilyBox();
+refreshFamily();
 </script>
 </body>
 </html>

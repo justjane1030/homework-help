@@ -24,6 +24,19 @@ exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'POST only' };
   const key = process.env.GEMINI_API_KEY;
   if (!key) return { statusCode: 500, body: JSON.stringify({ error: { message: 'Server key not set' } }) };
+
+  // Family codes: FAMILY_CODES env var, comma-separated (e.g. "smith-reads,garcia-42,jane").
+  // If the variable is empty or missing, codes are not required (keeps older setups working).
+  const codes = (process.env.FAMILY_CODES || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+  const h = event.headers || {};
+  const family = String(h['x-family-code'] || h['X-Family-Code'] || '').trim().toLowerCase();
+  if (codes.length && !codes.includes(family)) {
+    console.log(JSON.stringify({ event: 'scan_refused', reason: 'family_code' }));
+    return { statusCode: 401, headers: { 'Content-Type': 'application/json' },
+             body: JSON.stringify({ error: { message: 'Family code needed', code: 'family_code' } }) };
+  }
+  // Usage log (family code only, never the photo): visible in Netlify > Logs > Functions > scan
+  console.log(JSON.stringify({ event: 'scan', family: family || '(none)' }));
   let req;
   try { req = JSON.parse(event.body || '{}'); } catch (e) { return { statusCode: 400, body: '{}' }; }
   const { data, mime } = req;

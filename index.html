@@ -190,7 +190,7 @@
       <ol style="margin:12px 0 0;padding-left:20px;font-size:14px;line-height:1.8;color:var(--fg)">
         <li><b>Scan</b> one worksheet, or pick several pages at once.</li>
         <li><b>Coach</b> with the tips. Answers stay hidden until you tap.</li>
-        <li><b>Play</b> the Quick Check game made from <i>that</i> homework, to see if your child really learned it. It's optional. Tap <b>Scan another</b> to skip it.</li>
+        <li><b>Play</b> the Quick Check game made from <i>that</i> homework, to see if your child really learned it. It's optional. Tap <b>Scan another worksheet</b> to skip it.</li>
       </ol>
 
       <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="onPhoto(event)">
@@ -698,6 +698,8 @@ function renderCards(cards){
   const gateEl = document.getElementById('gate');
   gateEl.innerHTML = OWNER ? gateHtml : '';
   gateEl.style.display = OWNER ? 'block' : 'none';
+  // bottom-of-page way out, so parents can skip the game without scrolling back up
+  cardsHtml += `<button class="btn ghost" onclick="go('home')"><span class="big">📷 Scan another worksheet</span><span class="small">Skip the game and do the next page</span></button>`;
   document.getElementById('cardOut').innerHTML = cardsHtml;
   go('result');
 }
@@ -821,7 +823,7 @@ function endQuiz(){
       + G.firstMissed.map(q=>'• '+esc(q.q)+' → <b>'+esc(q.answer)+'</b>').join('<br>') + `</div>`;
   }
   h+=`<div class="qz-note">👪 <b>One more check:</b> ask your child to explain one thing from the homework in their own words. Tapping an answer shows recognition; explaining shows understanding.</div>`;
-  h+=`<button class="btn pink" onclick="startQuiz(${G.src})">🔁 Play again</button><button class="btn ghost" onclick="quitQuiz()">← Back to the tips</button></div>`;
+  h+=`<button class="btn pink" onclick="startQuiz(${G.src})">🔁 Play again</button><button class="btn ghost" onclick="quitQuiz()">← Back to the tips</button><button class="btn ghost" onclick="if(window.speechSynthesis)speechSynthesis.cancel();go('home')">📷 Scan another worksheet</button></div>`;
   document.getElementById('quizBody').innerHTML=h;
   window.scrollTo(0,0);
 }

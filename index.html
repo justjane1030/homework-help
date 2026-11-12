@@ -186,7 +186,12 @@
     <div class="hero">
       <span class="pill">PHOTO MODE</span>
       <h1>Snap tonight's homework 📷</h1>
-      <p>Take a photo of your child's reading worksheet. The app reads it and builds a short, warm card that tells you exactly what to say.</p>
+      <p>Snap your child's homework and get a short, warm guide that tells you exactly what to say.</p>
+      <ol style="margin:12px 0 0;padding-left:20px;font-size:14px;line-height:1.8;color:var(--fg)">
+        <li><b>Scan</b> one worksheet, or pick several pages at once.</li>
+        <li><b>Coach</b> with the tips. Answers stay hidden until you tap.</li>
+        <li><b>Play</b> the Quick Check game made from <i>that</i> homework, to see if your child really learned it. It's optional. Tap <b>Scan another</b> to skip it.</li>
+      </ol>
 
       <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="onPhoto(event)">
       <input type="file" id="libraryInput" accept="image/*" multiple style="display:none" onchange="onPhoto(event)">
@@ -684,7 +689,7 @@ function renderCards(cards){
     const qz = makeQuiz(data);
     QUIZZES[i] = qz;
     if(qz.length>=2){
-      cardsHtml += `<button class="btn pink" onclick="startQuiz(${i})"><span class="big">🎮 Homework done? Play Quick Check!</span><span class="small">${qz.length} quick questions for your child</span></button><div style="height:14px"></div>`;
+      cardsHtml += `<button class="btn pink" onclick="startQuiz(${i})"><span class="big">🎮 Homework done? Play Quick Check!</span><span class="small">${qz.length} quick questions for your child · optional</span></button><div style="height:14px"></div>`;
     }
     // show the accuracy gate for the first card only (keeps the top clean); others inline a slim note
     if(i===0) gateHtml = out.gate;

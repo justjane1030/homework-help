@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#ffe4c2">
+<meta name="theme-color" content="#cfe0ff">
 <title>Homework Helper — Photo (bring your own key)</title>
 <!-- Andika: a font made for beginning readers (single-story a and g) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,10 +15,10 @@
     /* pastel rainbow header + soft blue-to-pink main button; dark ink text everywhere on pastels */
     --bg:#fbfbfe; --card:#ffffff; --fg:#1e2a4a; --muted:#5a6276;
     --brand:#2f5fd0; --brand2:#5b80dc; --accent:#2f5fd0; --sun:#2f5fd0;
-    --blue:#2f5fd0; --blue2:#5b80dc; --pink:#c2447a; --pink2:#ffd3e4;
+    --blue:#2f5fd0; --blue2:#5b80dc; --pink:#2f5fd0; --pink2:#cfe0ff;
     --green:#2f7d4f; --purple:#2f5fd0; --orange:#a85d1c; --yellow:#e9a93a;
-    --rainbow:linear-gradient(100deg,#ffd5d0,#ffe4c2,#fff1b8,#d6f2cf,#cfe6ff);
-    --bluepink:linear-gradient(100deg,#cfe0ff,#ffd3e4);
+    --rainbow:linear-gradient(100deg,#cfe0ff,#c9ecf2,#d6f2cf,#fff1b8);
+    --bluepink:linear-gradient(100deg,#cfe0ff,#c9f0e4);
     --line:#ebe8f2; --shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.06);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -49,8 +49,8 @@
   .hero p{margin:0;color:var(--muted);font-size:15px}
   .steps{list-style:none;margin:18px 0 6px;padding:0;display:grid;gap:12px}
   .steps li{display:flex;gap:12px;align-items:flex-start;font-size:14.5px;line-height:1.5}
-  .steps .n{flex:0 0 28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--fg);background:#ffd3e4}
-  .steps li:nth-child(2) .n{background:#fff1b8} .steps li:nth-child(3) .n{background:#cfe0ff}
+  .steps .n{flex:0 0 28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--fg);background:#cfe0ff}
+  .steps li:nth-child(2) .n{background:#c9ecf2} .steps li:nth-child(3) .n{background:#d6f2cf}
   .btn{display:block; width:100%; border:0; border-radius:14px; padding:15px 16px; font-size:16px; font-weight:600; cursor:pointer; margin-top:12px; font-family:inherit; transition:background-color .15s ease, transform .08s ease;}
   .btn:active{transform:scale(.99)}
   .btn:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
@@ -66,7 +66,7 @@
   .btn[disabled]{opacity:.5;cursor:not-allowed}
   .btn .big{font-size:16.5px}
   .btn .small{display:block;font-size:12.5px;font-weight:500;opacity:.8;margin-top:2px}
-  .pill{display:inline-block;background:#ffd3e4;color:var(--fg);font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px}
+  .pill{display:inline-block;background:#fff1b8;color:var(--fg);font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px}
   .note{font-size:12.5px;color:var(--muted);text-align:center;margin-top:14px;line-height:1.6}
 
   label.fld{display:block;font-weight:700;font-size:14px;margin:14px 0 6px}
@@ -75,7 +75,7 @@
     font-size:16px;font-family:inherit;background:var(--card);color:var(--fg);
   }
   textarea:focus,input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(47,95,208,.18)}
-  .keybox{background:var(--card);border:1px solid var(--line);border-left:4px solid #f08bb4;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+  .keybox{background:var(--card);border:1px solid var(--line);border-left:4px solid #5b80dc;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
   .keybox .row{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;color:var(--fg)}
   .keybox .status{margin-left:auto;font-size:12px;font-weight:700}
   .keybox .status.ok{color:var(--green)} .keybox .status.no{color:#b42318}
@@ -94,7 +94,7 @@
   .coach{background:var(--card);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;border:1px solid var(--line)}
   .coach .top{color:var(--fg);padding:18px 18px}
   .coach .top.word{background:linear-gradient(100deg,#cfe0ff,#e3ecff)}
-  .coach .top.read{background:linear-gradient(100deg,#ffd3e4,#ffe6ef)}
+  .coach .top.read{background:linear-gradient(100deg,#c9ecf2,#e2f6f9)}
   .coach .top.math{background:linear-gradient(100deg,#fff1b8,#ffe4c2)}
   .coach .top.sci{background:linear-gradient(100deg,#d6f2cf,#e6f7e2)}
   .coach .top .grade{display:inline-block;background:rgba(255,255,255,.7);border-radius:999px;padding:2px 9px;font-size:11.5px;font-weight:700;margin-left:6px}
@@ -105,7 +105,7 @@
   .sec:first-of-type{border-top:0}
   .sec .st{font-weight:800;font-size:15px;margin-bottom:6px;display:flex;align-items:center;gap:7px}
   .sec .sub{font-size:12.5px;color:var(--muted);margin-bottom:8px}
-  .warm{background:#f5f8ff} .read{background:#fffbf6} .help{background:#fdf6fa} .fun{background:#f4fbf2} .finish{background:#fffbea}
+  .warm{background:#f5f8ff} .read{background:#fffbf6} .help{background:#f5f8ff} .fun{background:#f4fbf2} .finish{background:#fffbea}
   .sec .script{background:#fff;border-radius:10px;padding:10px 12px;font-size:14px;margin-top:6px;border:1px solid var(--line)}
   .sec .script b{color:var(--purple)}
   /* Story: big, airy, early-reader font; each sentence on its own soft-colored line */
@@ -113,12 +113,12 @@
     font-family:"Andika","Comic Sans MS","Trebuchet MS",system-ui,sans-serif;
     font-size:20px;line-height:1.75;letter-spacing:.02em;word-spacing:.14em;color:#1f2a37}
   .sline{border-radius:10px;padding:6px 12px}
-  .sline:nth-child(5n+1){background:#ffeceb}
-  .sline:nth-child(5n+2){background:#fff3e2}
-  .sline:nth-child(5n+3){background:#fffadf}
-  .sline:nth-child(5n+4){background:#eaf8e7}
-  .sline:nth-child(5n+5){background:#e8f2ff}
-  .sw{color:var(--brand);font-weight:700;text-decoration:underline;text-decoration-color:#f08bb4;text-decoration-thickness:3px;text-underline-offset:4px}
+  .sline:nth-child(5n+1){background:#e8f2ff}
+  .sline:nth-child(5n+2){background:#e6f7f8}
+  .sline:nth-child(5n+3){background:#eaf8e7}
+  .sline:nth-child(5n+4){background:#fffadf}
+  .sline:nth-child(5n+5){background:#eef1f8}
+  .sw{color:var(--brand);font-weight:700;text-decoration:underline;text-decoration-color:#f0a33a;text-decoration-thickness:3px;text-underline-offset:4px}
   .legend{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 8px;font-size:12.5px;color:var(--muted)}
   .legend span{background:#fff;border:1px solid var(--line);border-radius:999px;padding:2px 9px}
   .ow{border-radius:6px;padding:1px 7px;font-weight:700;color:#1f2a37}
@@ -186,7 +186,7 @@
   <div class="mark" aria-hidden="true">🦉</div>
   <div>
     <div class="title">Homework Coach</div>
-    <div class="sub">Grades K–5 · reading, spelling, math &amp; science · made by Jane Gou · v12 preview</div>
+    <div class="sub">Grades K–5 · reading, spelling, math &amp; science · made by Jane Gou · v12.1 preview</div>
   </div>
 </header>
 
@@ -276,7 +276,7 @@
       I built this as a parent, with a lot of love and a few late nights. Not because kids can't do homework, but because helping is the hard part: two kids bent over their work, one little one in my lap, and not quite enough of me to go around.
       <div style="margin-top:8px">🔒 <b>Privacy:</b> I don't save your photos. Google's Gemini AI reads each one, and on its free tier Google may use or review what's sent. Please <b>crop out your child's name</b>, and keep report cards and IEPs out of the app.</div>
       <div style="margin-top:8px">📌 Bookmark it or add it to your Home Screen. If it helped, pass it to one more parent. 💬 Feedback welcome!</div>
-      <div style="margin-top:8px"><b>Good to know:</b> Grown-ups do the snapping. I'm a mom, not a teacher, and this isn't linked to any school. AI can misread a worksheet, so <b>if a hint disagrees with the teacher, the teacher wins.</b></div>
+      <div style="margin-top:8px"><b>Just me:</b> This is a personal project from one parent. I'm not affiliated with any school, district, company or organization. The AI can get things wrong sometimes, so trust your judgment and your child's teacher.</div>
     </div>
     For grades K–5. Follows Florida B.E.S.T. standards for reading and math, and Florida science standards.
     Answers are hidden behind a tap so the child does the thinking.

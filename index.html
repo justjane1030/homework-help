@@ -4,16 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#1864ab">
+<meta name="theme-color" content="#ffe4c2">
 <title>Homework Helper — Photo (bring your own key)</title>
+<!-- Andika: a font made for beginning readers (single-story a and g) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    /* one-color theme: turquoise, used in light and dark shades */
-    --bg:#f6fbfb; --card:#ffffff; --fg:#1f2a37; --muted:#5f6b7a;
-    --brand:#0e8287; --brand2:#3fa9ab; --accent:#0a6c70; --sun:#0e8287;
-    --blue:#0e8287; --blue2:#3fa9ab; --pink:#0a6c70; --pink2:#0e8287;
-    --green:#2f7d5b; --purple:#0a6c70; --orange:#0a6c70; --yellow:#e9a93a;
-    --line:#e0eeee; --shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.06);
+    /* pastel rainbow header + soft blue-to-pink main button; dark ink text everywhere on pastels */
+    --bg:#fbfbfe; --card:#ffffff; --fg:#1e2a4a; --muted:#5a6276;
+    --brand:#2f5fd0; --brand2:#5b80dc; --accent:#2f5fd0; --sun:#2f5fd0;
+    --blue:#2f5fd0; --blue2:#5b80dc; --pink:#c2447a; --pink2:#ffd3e4;
+    --green:#2f7d4f; --purple:#2f5fd0; --orange:#a85d1c; --yellow:#e9a93a;
+    --rainbow:linear-gradient(100deg,#ffd5d0,#ffe4c2,#fff1b8,#d6f2cf,#cfe6ff);
+    --bluepink:linear-gradient(100deg,#cfe0ff,#ffd3e4);
+    --line:#ebe8f2; --shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.06);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
@@ -25,13 +31,13 @@
   }
   header.appbar{
     position:sticky; top:0; z-index:20;
-    background:#e2f6f5; color:var(--fg); padding:14px 18px;
-    border-bottom:1px solid #c7e9e7;
+    background:var(--rainbow); color:var(--fg); padding:14px 18px;
+    border-bottom:1px solid #ece3d6;
     display:flex; align-items:center; gap:12px;
   }
-  header.appbar .mark{flex:0 0 38px;height:38px;border-radius:12px;background:#ffffff;border:1px solid #c7e9e7;display:flex;align-items:center;justify-content:center;font-size:21px}
-  header.appbar .title{font-size:18px;font-weight:700;letter-spacing:.1px;color:#0b5f63}
-  header.appbar .sub{font-size:12px;color:var(--muted);margin-top:1px}
+  header.appbar .mark{flex:0 0 38px;height:38px;border-radius:12px;background:rgba(255,255,255,.75);border:1px solid rgba(30,42,74,.08);display:flex;align-items:center;justify-content:center;font-size:21px}
+  header.appbar .title{font-family:Georgia,'Iowan Old Style','Times New Roman',serif;font-size:20px;font-weight:700;letter-spacing:.1px;color:var(--fg)}
+  header.appbar .sub{font-size:12px;color:#4a5370;margin-top:1px}
   .wrap{padding:18px 16px}
   .screen{display:none}
   .screen.active{display:block;animation:fade .25s ease}
@@ -43,21 +49,24 @@
   .hero p{margin:0;color:var(--muted);font-size:15px}
   .steps{list-style:none;margin:18px 0 6px;padding:0;display:grid;gap:12px}
   .steps li{display:flex;gap:12px;align-items:flex-start;font-size:14.5px;line-height:1.5}
-  .steps .n{flex:0 0 28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#0b5f63;background:#cdeeec}
+  .steps .n{flex:0 0 28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--fg);background:#ffd3e4}
+  .steps li:nth-child(2) .n{background:#fff1b8} .steps li:nth-child(3) .n{background:#cfe0ff}
   .btn{display:block; width:100%; border:0; border-radius:14px; padding:15px 16px; font-size:16px; font-weight:600; cursor:pointer; margin-top:12px; font-family:inherit; transition:background-color .15s ease, transform .08s ease;}
   .btn:active{transform:scale(.99)}
   .btn:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
-  .btn.primary,.btn.cam{background:var(--brand);color:#fff}
-  .btn.primary:hover,.btn.cam:hover{background:#0a6c70}
-  .btn.lib{background:var(--card);color:var(--brand);border:1.5px solid #bfe3e1}
-  .btn.lib:hover{background:#effaf9}
-  .btn.pink{background:#0a6c70;color:#fff}
-  .btn.pink:hover{background:#085a5d}
-  .btn.ghost{background:var(--card);color:var(--brand);border:1.5px solid #bfe3e1}
+  .btn.primary{background:var(--brand);color:#fff}
+  .btn.primary:hover{background:#264fb0}
+  .btn.cam{background:var(--bluepink);color:var(--fg);font-weight:700;box-shadow:0 2px 8px rgba(47,95,208,.12)}
+  .btn.cam:hover{filter:brightness(.97)}
+  .btn.lib{background:var(--card);color:var(--brand);border:1.5px solid #cfd9f3}
+  .btn.lib:hover{background:#f5f8ff}
+  .btn.pink{background:var(--rainbow);color:var(--fg);font-weight:700;box-shadow:0 2px 8px rgba(30,42,74,.08)}
+  .btn.pink:hover{filter:brightness(.97)}
+  .btn.ghost{background:var(--card);color:var(--brand);border:1.5px solid #cfd9f3}
   .btn[disabled]{opacity:.5;cursor:not-allowed}
   .btn .big{font-size:16.5px}
   .btn .small{display:block;font-size:12.5px;font-weight:500;opacity:.8;margin-top:2px}
-  .pill{display:inline-block;background:#e2f6f5;color:#0b5f63;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px}
+  .pill{display:inline-block;background:#ffd3e4;color:var(--fg);font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px}
   .note{font-size:12.5px;color:var(--muted);text-align:center;margin-top:14px;line-height:1.6}
 
   label.fld{display:block;font-weight:700;font-size:14px;margin:14px 0 6px}
@@ -65,8 +74,8 @@
     width:100%;border:1.5px solid #d9d5cc;border-radius:12px;padding:12px 13px;
     font-size:16px;font-family:inherit;background:var(--card);color:var(--fg);
   }
-  textarea:focus,input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(14,130,135,.18)}
-  .keybox{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+  textarea:focus,input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(47,95,208,.18)}
+  .keybox{background:var(--card);border:1px solid var(--line);border-left:4px solid #f08bb4;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
   .keybox .row{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;color:var(--fg)}
   .keybox .status{margin-left:auto;font-size:12px;font-weight:700}
   .keybox .status.ok{color:var(--green)} .keybox .status.no{color:#b42318}
@@ -83,22 +92,37 @@
 
   /* Coach card (identical to typed prototype) */
   .coach{background:var(--card);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;border:1px solid var(--line)}
-  .coach .top{color:#fff;padding:18px 18px}
-  .coach .top.read{background:#0a6c70}
-  .coach .top.word{background:var(--brand)}
-  .coach .top .for{font-size:12px;opacity:.92}
+  .coach .top{color:var(--fg);padding:18px 18px}
+  .coach .top.word{background:linear-gradient(100deg,#cfe0ff,#e3ecff)}
+  .coach .top.read{background:linear-gradient(100deg,#ffd3e4,#ffe6ef)}
+  .coach .top.math{background:linear-gradient(100deg,#fff1b8,#ffe4c2)}
+  .coach .top.sci{background:linear-gradient(100deg,#d6f2cf,#e6f7e2)}
+  .coach .top .grade{display:inline-block;background:rgba(255,255,255,.7);border-radius:999px;padding:2px 9px;font-size:11.5px;font-weight:700;margin-left:6px}
+  .coach .top .for{font-size:12px;opacity:.85}
   .coach .top .h{font-size:20px;font-weight:800;margin-top:2px}
   .coach .top .s{font-size:13px;opacity:.92;margin-top:2px}
   .sec{padding:14px 16px;border-top:1px solid var(--line)}
   .sec:first-of-type{border-top:0}
   .sec .st{font-weight:800;font-size:15px;margin-bottom:6px;display:flex;align-items:center;gap:7px}
   .sec .sub{font-size:12.5px;color:var(--muted);margin-bottom:8px}
-  .warm{background:#effaf9} .read{background:#fafcfc} .help{background:#f2f9f9} .fun{background:#effaf9} .finish{background:#f6fbfb}
+  .warm{background:#f5f8ff} .read{background:#fffbf6} .help{background:#fdf6fa} .fun{background:#f4fbf2} .finish{background:#fffbea}
   .sec .script{background:#fff;border-radius:10px;padding:10px 12px;font-size:14px;margin-top:6px;border:1px solid var(--line)}
   .sec .script b{color:var(--purple)}
-  .story{background:#fff;border:1px solid #ffe8a3;border-radius:10px;padding:12px;font-size:15px;line-height:1.9}
-  .ow{border-radius:5px;padding:1px 6px;font-weight:800;color:#222}
-  .ow.first{background:#ffd43b} .ow.next{background:#ffa94d} .ow.then{background:#69db7c} .ow.finally{background:#4dabf7;color:#fff}
+  /* Story: big, airy, early-reader font; each sentence on its own soft-colored line */
+  .story{background:#fff;border:1px solid var(--line);border-radius:14px;padding:8px;display:grid;gap:6px;
+    font-family:"Andika","Comic Sans MS","Trebuchet MS",system-ui,sans-serif;
+    font-size:20px;line-height:1.75;letter-spacing:.02em;word-spacing:.14em;color:#1f2a37}
+  .sline{border-radius:10px;padding:6px 12px}
+  .sline:nth-child(5n+1){background:#ffeceb}
+  .sline:nth-child(5n+2){background:#fff3e2}
+  .sline:nth-child(5n+3){background:#fffadf}
+  .sline:nth-child(5n+4){background:#eaf8e7}
+  .sline:nth-child(5n+5){background:#e8f2ff}
+  .sw{color:var(--brand);font-weight:700;text-decoration:underline;text-decoration-color:#f08bb4;text-decoration-thickness:3px;text-underline-offset:4px}
+  .legend{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 8px;font-size:12.5px;color:var(--muted)}
+  .legend span{background:#fff;border:1px solid var(--line);border-radius:999px;padding:2px 9px}
+  .ow{border-radius:6px;padding:1px 7px;font-weight:700;color:#1f2a37}
+  .ow.first{background:#ffe08a} .ow.next{background:#ffc69a} .ow.then{background:#bfe8c9} .ow.finally{background:#bcdcf7}
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
   .chip{background:#fff;border:1px solid var(--line);border-radius:9px;padding:7px 11px;font-size:17px}
   .chip.sight{font-size:16px;font-weight:700}
@@ -128,7 +152,7 @@
   .gate b{color:var(--green)}
   .gate .chk{color:var(--green)}
   .backbar{display:flex;gap:10px;margin:4px 0 18px}
-  .backbar button{flex:1;border:1.5px solid #bfe3e1;background:var(--card);color:var(--brand);border-radius:12px;padding:12px;font-weight:600;font-size:15px;cursor:pointer;font-family:inherit}
+  .backbar button{flex:1;border:1.5px solid #cfd9f3;background:var(--card);color:var(--brand);border-radius:12px;padding:12px;font-weight:600;font-size:15px;cursor:pointer;font-family:inherit}
   .err{background:#fdf6ec;border:1px solid #f1d9b5;border-left:4px solid var(--sun);color:#6b4410;border-radius:12px;padding:12px 14px;font-size:14px;margin-top:12px;display:none;line-height:1.55}
   .footer{text-align:center;font-size:11px;color:var(--muted);margin-top:8px;padding:0 16px 20px}
   .footer a{color:var(--blue)}
@@ -137,12 +161,12 @@
   .qz-top{display:flex;align-items:center;gap:10px;margin:2px 0 14px}
   .qz-x{border:0;background:var(--card);border:1.5px solid var(--line);border-radius:50%;width:38px;height:38px;font-size:16px;cursor:pointer;color:var(--muted)}
   .qz-bar{flex:1;height:10px;background:#ebe8e1;border-radius:999px;overflow:hidden}
-  .qz-bar i{display:block;height:100%;background:var(--accent);border-radius:999px;transition:width .3s ease}
+  .qz-bar i{display:block;height:100%;background:var(--rainbow);border-radius:999px;transition:width .3s ease}
   .qz-stars{font-weight:800;font-size:15px}
   .qz-card{background:var(--card);border-radius:20px;box-shadow:var(--shadow);border:1px solid var(--line);padding:20px 16px}
   .qz-n{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px}
   .qz-q{font-size:22px;font-weight:800;line-height:1.35;margin-bottom:12px}
-  .qz-say{border:1.5px solid #bfe3e1;background:var(--card);color:var(--brand);font-weight:600;font-size:15px;padding:9px 16px;border-radius:999px;cursor:pointer;margin-bottom:12px;font-family:inherit}
+  .qz-say{border:1.5px solid #cfd9f3;background:var(--card);color:var(--brand);font-weight:600;font-size:15px;padding:9px 16px;border-radius:999px;cursor:pointer;margin-bottom:12px;font-family:inherit}
   .qz-choices{display:grid;gap:10px}
   .qz-c{border:1.5px solid #d9d5cc;background:#fff;color:var(--fg);border-radius:14px;padding:16px;font-size:20px;font-weight:600;cursor:pointer;text-align:center;font-family:inherit;transition:transform .08s ease, border-color .15s ease}
   .qz-c:hover{border-color:var(--brand)}
@@ -162,7 +186,7 @@
   <div class="mark" aria-hidden="true">🦉</div>
   <div>
     <div class="title">Homework Coach</div>
-    <div class="sub">A calm guide for parents · made by Jane Gou · v11.4 preview</div>
+    <div class="sub">Grades K–5 · reading, spelling, math &amp; science · made by Jane Gou · v12 preview</div>
   </div>
 </header>
 
@@ -247,17 +271,14 @@
 
   <div class="footer">
     <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:6px">Made with ❤️ by Jane Gou</div>
-    <div style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:6px 0 10px;text-align:left;font-size:12.5px;line-height:1.7;color:var(--fg)">
-      <b>A note from Jane</b><br>
-      I made this to make homework time a little easier. It's free, personal and not a business.<br>
-      🔒 <b>Your privacy:</b> this app doesn't save your photos, your child's work or any personal info.
-      Each photo is sent to Google's Gemini AI to be read, then the app forgets it.
-      The only thing kept is a count of scans per family code, so I know the app is working.
-      Please crop out your child's name before you snap.<br>
-      ⭐ <b>Keep it handy:</b> bookmark this page, or add it to your Home Screen. It works on any phone or browser.<br>
-      💬 <b>Ideas or problems?</b> Feel free to send me any feedback!
+    <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:6px 0 10px;text-align:left;font-size:13px;line-height:1.7;color:var(--fg)">
+      <b>A note from Jane</b> 💛<br>
+      I built this as a parent, with a lot of love and a few late nights. Not because kids can't do homework, but because helping is the hard part: two kids bent over their work, one little one in my lap, and not quite enough of me to go around.
+      <div style="margin-top:8px">🔒 <b>Privacy:</b> I don't save your photos. Google's Gemini AI reads each one, and on its free tier Google may use or review what's sent. Please <b>crop out your child's name</b>, and keep report cards and IEPs out of the app.</div>
+      <div style="margin-top:8px">📌 Bookmark it or add it to your Home Screen. If it helped, pass it to one more parent. 💬 Feedback welcome!</div>
+      <div style="margin-top:8px"><b>Good to know:</b> Grown-ups do the snapping. I'm a mom, not a teacher, and this isn't linked to any school. AI can misread a worksheet, so <b>if a hint disagrees with the teacher, the teacher wins.</b></div>
     </div>
-    Grounded in Florida B.E.S.T. reading standards and the Science of Reading.
+    For grades K–5. Follows Florida B.E.S.T. standards for reading and math, and Florida science standards.
     Answers are hidden behind a tap so the child does the thinking.
   </div>
 </div>
@@ -409,6 +430,22 @@ function highlightOrder(line){
   });
   return out;
 }
+/* One story sentence -> colored line. Order words get a color chip; words with the
+   target short-vowel sound are underlined (same phonics check as the word cards). */
+const ORDER_CLS={first:'first',next:'next',then:'then',finally:'finally'};
+function storyLine(line, hasOrder, letter){
+  const out=line.split(/(\s+)/).map(tok=>{
+    if(/^\s+$/.test(tok)) return tok;
+    const m=tok.match(/^([^A-Za-z']*)([A-Za-z']+)([^A-Za-z']*)$/);
+    if(!m) return esc(tok);
+    const [,pre,word,post]=m, lw=word.toLowerCase();
+    let w=esc(word);
+    if(hasOrder && ORDER_CLS[lw]) w=`<span class="ow ${ORDER_CLS[lw]}">${w}</span>`;
+    else if(letter && !SIGHT.has(lw) && matchesShortVowel(word,letter).ok) w=`<span class="sw">${w}</span>`;
+    return esc(pre)+w+esc(post);
+  }).join('');
+  return `<div class="sline">${out}</div>`;
+}
 function buildStoryCard(d){
   const checks=[];
   const lines=(d.story||'').split(/\n+/).map(s=>s.trim()).filter(Boolean);
@@ -419,8 +456,13 @@ function buildStoryCard(d){
   checks.push({ok:true,msg:`Clutter: no codes or jargon; parent-voice scripts only.`});
   let html=`<div class="coach"><div class="top read"><div class="for">👪 For you, Mom/Dad · 5–10 min · keep it fun</div><div class="h">${esc(d.title||'Reading together')} 📖</div><div class="s">${hasOrder?'Put the story in order':'Read it together, then find the clues'}</div></div>`;
   html += warmSec(`Say: <i>"Let's play detective! This story has ${hasOrder?'secret ORDER words hiding in it — First, Next, Then, Finally':'clues hiding in the words'}. Ready to hunt for them?"</i>`);
-  html += `<div class="sec read"><div class="st">② Read it together <span style="font-weight:500;font-size:12px;color:var(--muted)">· 2 min 📖</span></div><div class="sub">Read out loud with your child. ${hasOrder?'The colored words are the order clues.':''}</div><div class="story">`;
-  html += lines.map(l=> hasOrder?highlightOrder(l):esc(l)).join('<br>');
+  const soundName=(d.sound||'').toLowerCase().trim();
+  const letter=VOWEL[soundName]?VOWEL[soundName].letter:null;
+  const legend=[];
+  if(letter) legend.push(`<span><span class="sw">Underlined</span> = short <b>${letter}</b> sound words</span>`);
+  if(hasOrder) legend.push(`<span><span class="ow first">First</span> <span class="ow next">Next</span> <span class="ow then">Then</span> <span class="ow finally">Finally</span> = order clues</span>`);
+  html += `<div class="sec read"><div class="st">② Read it together <span style="font-weight:500;font-size:12px;color:var(--muted)">· 2 min 📖</span></div><div class="sub">Read out loud with your child, one colored line at a time. Point to each word as you go.</div>${legend.length?`<div class="legend">${legend.join('')}</div>`:''}<div class="story">`;
+  html += lines.map(l=>storyLine(l,hasOrder,letter)).join('');
   html += `</div></div>`;
   if((d.questions||[]).length){
     html += `<div class="sec help"><div class="st">③ Help, don't tell <span style="font-weight:500;font-size:12px;color:var(--muted)">· 3 min 💬</span></div><div class="sub">When your child is stuck, point them to a clue word — don't give the answer. Celebrate when they get it.</div>`;
@@ -452,7 +494,7 @@ function buildMathCard(d){
   checks.push({ok:false,msg:`Heads-up: math reading is newer than reading sheets — double-check numbers against the page before trusting them.`});
   checks.push({ok:true,msg:`Clutter: plain-English steps, no math jargon on the card.`});
 
-  let html=`<div class="coach"><div class="top" style="background:linear-gradient(135deg,#2b8a3e,#51cf66)"><div class="for">👪 For you, Mom/Dad · math · ~10 min</div><div class="h">${esc(d.topic||'Math homework')} ✖️</div><div class="s">Help your child reason it out — don't just give the number</div></div>`;
+  let html=`<div class="coach"><div class="top math"><div class="for">👪 For you, Mom/Dad · math · ~10 min</div><div class="h">${esc(d.topic||'Math homework')} ✖️</div><div class="s">Help your child reason it out — don't just give the number</div></div>`;
   html += warmSec(`Say: <i>"Let's be math detectives. I won't give you the answer — I'll give you a clue, and you figure it out. Ready?"</i>`);
   if(probs.length){
     html += `<div class="sec help"><div class="st">③ Help, don't tell <span style="font-weight:500;font-size:12px;color:var(--muted)">💬</span></div><div class="sub">For each one, read the clue aloud and let your child try first.</div>`;
@@ -469,6 +511,46 @@ function buildMathCard(d){
     `Celebrate the thinking, not just the right number`
   ]);
   html += finishSec(`your child can explain WHY the answer works, not just state it. End on a high-five.`);
+  html += `</div>`;
+  return {html, gate:renderGate(checks)};
+}
+
+/* SCIENCE card: key words, read together, think-it-through questions, a safe try-it-at-home */
+function buildScienceCard(d){
+  const checks=[];
+  const lines=(d.passage||'').split(/\n+/).map(s=>s.trim()).filter(Boolean);
+  const qs=(d.questions||[]).filter(q=>q&&q.q);
+  checks.push({ok:true,msg:`Subject: science — think-it-through questions; answers hidden behind a tap.`});
+  checks.push({ok:true,msg: lines.length?`Full text: all ${lines.length} sentence(s) shown.`:`No reading passage on this page.`});
+  checks.push({ok:false,msg:`Heads-up: double-check labels and diagrams against the page — photos of diagrams are the hardest to read.`});
+
+  let html=`<div class="coach"><div class="top sci"><div class="for">👪 For you, Mom/Dad · science · ~10 min</div><div class="h">${esc(d.topic||'Science homework')} 🔬</div><div class="s">Wonder together first — then find the answer</div></div>`;
+  html += warmSec(`Say: <i>"Let's be scientists! Scientists guess first, then check. What do you think this page is about?"</i>`);
+  if((d.vocab||[]).length){
+    html += `<div class="sec"><div class="st">💡 Science words</div><div class="vocab">`;
+    d.vocab.forEach(v=>{ if(v&&v.word) html+=`<b>${esc(v.word)}</b> — ${esc(v.meaning||'')}<br>`; });
+    html += `</div><div class="script">👪 <b>Ask it backwards:</b> "Which word means <i>${esc((d.vocab[0]&&d.vocab[0].meaning)||'')}</i>?"</div></div>`;
+  }
+  if(lines.length){
+    html += `<div class="sec read"><div class="st">② Read it together <span style="font-weight:500;font-size:12px;color:var(--muted)">· 2 min 📖</span></div><div class="sub">Read out loud, one colored line at a time.</div><div class="story">`;
+    html += lines.map(l=>storyLine(l,false,null)).join('');
+    html += `</div></div>`;
+  }
+  if(qs.length){
+    html += `<div class="sec help"><div class="st">③ Help, don't tell <span style="font-weight:500;font-size:12px;color:var(--muted)">💬</span></div><div class="sub">Ask "What do you think?" first. Use the clue only if they're stuck.</div>`;
+    qs.forEach((q,i)=>{
+      html += `<div class="qbox"><b>${i+1}.</b> ${esc(q.q)}`;
+      if(q.cue) html += `<div class="cue">🕵️ ${esc(q.cue)}</div>`;
+      html += `${reveal(esc(q.answer||'(look back at the page together)'))}</div>`;
+    });
+    html += `</div>`;
+  }
+  const games=[];
+  if(d.tryit) games.push(`🧪 <b>Try it at home (with a grown-up):</b> ${esc(d.tryit)}`);
+  games.push(`Draw it: your child sketches the idea and explains the picture to you`);
+  games.push(`"I wonder…" — take turns asking one new question about the topic`);
+  html += funSec(games);
+  html += finishSec(`your child can explain the idea in their own words and give one real-life example. End on a high-five.`);
   html += `</div>`;
   return {html, gate:renderGate(checks)};
 }
@@ -606,8 +688,10 @@ async function onPhoto(ev){
   renderCards(cards);
 }
 
-const EXTRACT_PROMPT = `You are reading a photo of a child's ELEMENTARY homework worksheet (US grades K-3, Florida).
+const EXTRACT_PROMPT = `You are reading a photo of a child's ELEMENTARY homework worksheet (US grades K-5, Florida public school: Florida B.E.S.T. standards for reading/ELA and math, Florida NGSSS for science).
 Return ONLY a JSON object, no markdown, no commentary. Choose the ONE type that best fits.
+ALWAYS include a top-level "grade": the grade level as "K","1","2","3","4" or "5" if it is printed or clearly implied by the work, else "".
+Match the tips, words and quiz difficulty to that grade (e.g. K-1: sounds, sight words, counting; 2-3: vowel teams, main idea, multiplication; 4-5: context clues, prefixes/suffixes, theme, text evidence, fractions, decimals, multi-digit math).
 
 TYPE 1 — WORD LIST / spelling / phonics (a list of words to spell or sound out):
 {"type":"word","sound":"short u | long a | '' if none stated","spell":["every spelling/decodable word exactly as printed"],"sight":["high-frequency / 'words to know' words"],"vocab":[{"word":"w","meaning":"kid-friendly meaning"}]}
@@ -615,10 +699,13 @@ TYPE 1 — WORD LIST / spelling / phonics (a list of words to spell or sound out
 TYPE 2 — READING passage with questions (a story PLUS comprehension or phonics questions, e.g. "circle short-u words", "who are the characters", story map):
 {"type":"story","title":"title if any","story":"EVERY sentence of the passage, one per line, \\n separated, nothing skipped","questions":[{"q":"each question exactly as printed","answer":"the CORRECT answer to this question, taken from the story (for 'circle the short-u words' list the actual words; for a comprehension question give the real answer, not a hint)","cue":"ONE short clue a parent can give to guide the child without handing over the answer"}],"sound":"a phonics sound the questions ask about, e.g. 'short u', else ''"}
 
-TYPE 3 — MATH worksheet (multiplication, factors, tables, number problems):
+TYPE 3 — MATH worksheet (addition, subtraction, multiplication, division, fractions, decimals, measurement, number problems):
 {"type":"math","topic":"short topic, e.g. 'missing factors & multiplication'","problems":[{"q":"the question text as printed","answer":"the correct answer","how":"ONE short plain-English way a parent can guide the child to it, no jargon"}]}
 
-QUIZ (for ALL types): also add a top-level key "quiz" with 5 short, fun, kid-friendly multiple-choice questions that check whether the child really learned what THIS worksheet taught (word meanings, the phonics sound, who/where/what happened in the story, the order of events, or the math idea). Each item: {"q":"question a 3rd grader can read","choices":["A","B","C"],"answer":"must be EXACTLY one of the choices","say":"optional: one word to read aloud, only for 'which word did you hear' questions, else ''"}. Use 2 or 3 choices, exactly ONE correct. Use only facts that are on the worksheet. Never make the correct answer obvious from the wording.
+TYPE 4 — SCIENCE worksheet (plants, animals, weather, matter, forces, Earth and space, life cycles, experiments, diagrams to label):
+{"type":"science","topic":"short topic, e.g. 'states of matter'","passage":"any reading text on the page, one sentence per line, \\n separated, else ''","vocab":[{"word":"science word on the page","meaning":"kid-friendly meaning"}],"questions":[{"q":"each question or label task exactly as printed","answer":"the CORRECT answer","cue":"ONE short clue that gets the child thinking, e.g. 'What happens to ice on a hot day?'"}],"tryit":"ONE quick, safe at-home activity with household items that shows the same idea (needs a grown-up, no heat, sharp tools or chemicals)"}
+
+QUIZ (for ALL types): also add a top-level key "quiz" with 5 short, fun, kid-friendly multiple-choice questions that check whether the child really learned what THIS worksheet taught (word meanings, the phonics sound, who/where/what happened in the story, the order of events, the math idea, or the science idea). Each item: {"q":"question a child in THIS grade can read","choices":["A","B","C"],"answer":"must be EXACTLY one of the choices","say":"optional: one word to read aloud, only for 'which word did you hear' questions, else ''"}. Use 2 or 3 choices, exactly ONE correct. Use only facts that are on the worksheet. Never make the correct answer obvious from the wording.
 
 Rules: copy text EXACTLY as printed. Do NOT invent content. If a field is unknown use "" or []. For a reading passage, include the COMPLETE story text, not just the lines the questions touch, AND give the real correct answer to every question (never a hint in place of the answer). For math, solve each problem correctly and give a parent-friendly 'how', not just the answer.`;
 
@@ -691,12 +778,22 @@ async function callGemini(key, base64, mime){
 
 /* Build the card HTML+gate for one worksheet's data. */
 function buildFromData(data){
+  let out;
   if(data.type==='word'){
-    return buildWordCard({ sound:data.sound||'', spell:data.spell||[], sight:data.sight||[], vocab:data.vocab||[] });
+    out = buildWordCard({ sound:data.sound||'', spell:data.spell||[], sight:data.sight||[], vocab:data.vocab||[] });
   } else if(data.type==='math'){
-    return buildMathCard({ topic:data.topic||'', problems:data.problems||[] });
+    out = buildMathCard({ topic:data.topic||'', problems:data.problems||[] });
+  } else if(data.type==='science'){
+    out = buildScienceCard({ topic:data.topic||'', passage:data.passage||'', vocab:data.vocab||[], questions:data.questions||[], tryit:data.tryit||'' });
+  } else {
+    out = buildStoryCard({ title:data.title||'', story:data.story||'', questions:data.questions||[], sound:data.sound||'' });
   }
-  return buildStoryCard({ title:data.title||'', story:data.story||'', questions:data.questions||[], sound:data.sound||'' });
+  // grade tag next to the card title, only when Gemini found a K-5 grade on the page
+  const g=String(data.grade||'').trim().toUpperCase();
+  if(/^(K|[1-5])$/.test(g)){
+    out.html = out.html.replace('<div class="h">', `<div class="h"><span class="grade" style="float:right">${g==='K'?'Kindergarten':'Grade '+g}</span>`);
+  }
+  return out;
 }
 
 /* Render one or many cards onto the result screen, stacked. */

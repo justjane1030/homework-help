@@ -9,9 +9,9 @@
 <style>
   :root{
     /* calm, classic palette: warm paper, deep teal ink, one soft coral accent */
-    --bg:#f6f5f1; --card:#ffffff; --fg:#1f2a37; --muted:#5f6b7a;
-    --brand:#1d4e5f; --brand2:#2b6a7c; --accent:#d9714e; --sun:#e9a93a;
-    --blue:#1d4e5f; --blue2:#3f7f90; --pink:#b8553a; --pink2:#d9714e;
+    --bg:#faf9f6; --card:#ffffff; --fg:#1f2a37; --muted:#5f6b7a;
+    --brand:#2b7a8b; --brand2:#4a96a6; --accent:#d9714e; --sun:#e9a93a;
+    --blue:#2b7a8b; --blue2:#4a96a6; --pink:#b8553a; --pink2:#d9714e;
     --green:#2f7d5b; --purple:#5b4b8a; --orange:#a85d1c; --yellow:#e9a93a;
     --line:#e6e3dc; --shadow:0 1px 2px rgba(16,24,40,.04), 0 6px 18px rgba(16,24,40,.06);
   }
@@ -25,13 +25,13 @@
   }
   header.appbar{
     position:sticky; top:0; z-index:20;
-    background:var(--brand); color:#fff; padding:14px 18px;
-    box-shadow:0 1px 0 rgba(0,0,0,.06);
+    background:#e8f3f4; color:var(--fg); padding:14px 18px;
+    border-bottom:1px solid #d3e6e9;
     display:flex; align-items:center; gap:12px;
   }
-  header.appbar .mark{flex:0 0 38px;height:38px;border-radius:12px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:21px}
-  header.appbar .title{font-size:18px;font-weight:700;letter-spacing:.1px}
-  header.appbar .sub{font-size:12px;opacity:.82;margin-top:1px}
+  header.appbar .mark{flex:0 0 38px;height:38px;border-radius:12px;background:#ffffff;border:1px solid #d3e6e9;display:flex;align-items:center;justify-content:center;font-size:21px}
+  header.appbar .title{font-size:18px;font-weight:700;letter-spacing:.1px;color:#1f5a67}
+  header.appbar .sub{font-size:12px;color:var(--muted);margin-top:1px}
   .wrap{padding:18px 16px}
   .screen{display:none}
   .screen.active{display:block;animation:fade .25s ease}
@@ -48,11 +48,11 @@
   .btn:active{transform:scale(.99)}
   .btn:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
   .btn.primary,.btn.cam{background:var(--brand);color:#fff}
-  .btn.primary:hover,.btn.cam:hover{background:#173f4d}
+  .btn.primary:hover,.btn.cam:hover{background:#246a79}
   .btn.lib{background:var(--card);color:var(--brand);border:1.5px solid #c9d6da}
   .btn.lib:hover{background:#f3f7f8}
-  .btn.pink{background:var(--accent);color:#fff}
-  .btn.pink:hover{background:#c8613f}
+  .btn.pink{background:#b85636;color:#fff}
+  .btn.pink:hover{background:#a44b2f}
   .btn.ghost{background:var(--card);color:var(--brand);border:1.5px solid #c9d6da}
   .btn[disabled]{opacity:.5;cursor:not-allowed}
   .btn .big{font-size:16.5px}
@@ -84,7 +84,7 @@
   /* Coach card (identical to typed prototype) */
   .coach{background:var(--card);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;border:1px solid var(--line)}
   .coach .top{color:#fff;padding:18px 18px}
-  .coach .top.read{background:#8a4b37}
+  .coach .top.read{background:#a85a40}
   .coach .top.word{background:var(--brand)}
   .coach .top .for{font-size:12px;opacity:.92}
   .coach .top .h{font-size:20px;font-weight:800;margin-top:2px}
@@ -162,7 +162,7 @@
   <div class="mark" aria-hidden="true">🦉</div>
   <div>
     <div class="title">Homework Coach</div>
-    <div class="sub">A calm guide for parents · made by Jane Gou · v11.2 preview</div>
+    <div class="sub">A calm guide for parents · made by Jane Gou · v11.3 preview</div>
   </div>
 </header>
 

@@ -30,18 +30,13 @@ exports.handler = async (event) => {
   const key = process.env.GEMINI_API_KEY;
   if (!key) return { statusCode: 500, body: JSON.stringify({ error: { message: 'Server key not set' } }) };
 
-  // Family codes: FAMILY_CODES env var, comma-separated (e.g. "smith-reads,garcia-42,jane").
-  // If the variable is empty or missing, codes are not required (keeps older setups working).
-  const codes = (process.env.FAMILY_CODES || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+  // Anonymous usage log: a random per-phone ID made in the browser (no name, email or photo).
+  // Only a strict hex ID is accepted, so nothing else can be written into the logs.
+  // See it in Netlify > Logs > Functions > scan.
   const h = event.headers || {};
-  const family = String(h['x-family-code'] || h['X-Family-Code'] || '').trim().toLowerCase();
-  if (codes.length && !codes.includes(family)) {
-    console.log(JSON.stringify({ event: 'scan_refused', reason: 'family_code' }));
-    return { statusCode: 401, headers: { 'Content-Type': 'application/json' },
-             body: JSON.stringify({ error: { message: 'Family code needed', code: 'family_code' } }) };
-  }
-  // Usage log (family code only, never the photo): visible in Netlify > Logs > Functions > scan
-  console.log(JSON.stringify({ event: 'scan', family: family || '(none)' }));
+  const rawId = String(h['x-device-id'] || h['X-Device-Id'] || '');
+  const device = /^[a-f0-9]{16,32}$/.test(rawId) ? rawId : 'unknown';
+  console.log(JSON.stringify({ event: 'scan', device, day: new Date().toISOString().slice(0, 10) }));
   let req;
   try { req = JSON.parse(event.body || '{}'); } catch (e) { return { statusCode: 400, body: '{}' }; }
   const { data, mime } = req;

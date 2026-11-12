@@ -186,7 +186,7 @@
   <div class="mark" aria-hidden="true">🦉</div>
   <div>
     <div class="title">Homework Coach</div>
-    <div class="sub">Grades K–5 · reading, spelling, math &amp; science · made by Jane Gou · v12.1 preview</div>
+    <div class="sub">Grades K–5 · reading, spelling, math &amp; science · made by Jane Gou · v12.2 preview</div>
   </div>
 </header>
 
@@ -214,16 +214,9 @@
       </div>
     </div>
 
-    <!-- FAMILY CODE (parents) -->
-    <div class="keybox" id="famBox" style="display:none">
-      <div class="row">👪 Your family code</div>
-      <div class="help" id="famHelp" style="margin-top:4px">Ask the person who shared this app with you for your family code. You only type it once on this phone.</div>
-      <label for="famInput" style="position:absolute;left:-9999px">Family code</label>
-      <input type="text" id="famInput" placeholder="e.g. smith-reads" autocomplete="off" autocapitalize="none" spellcheck="false" style="margin-top:8px">
-      <button class="btn primary" style="margin-top:8px;padding:11px" onclick="saveFamily()">Save code</button>
-    </div>
+    <!-- scans left today (parents scanning through the shared key) -->
     <div id="famLink" style="display:none;text-align:right;margin:-4px 2px 10px;font-size:12px;color:var(--muted)">
-      👪 <span id="famName"></span> · <span id="famLeft"></span> · <a href="#" onclick="showFamilyBox();return false;" style="color:var(--muted)">change</a>
+      <span id="famLeft"></span>
     </div>
 
     <div class="hero">
@@ -274,7 +267,7 @@
     <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:6px 0 10px;text-align:left;font-size:13px;line-height:1.7;color:var(--fg)">
       <b>A note from Jane</b> 💛<br>
       I built this as a parent, with a lot of love and a few late nights. Not because kids can't do homework, but because helping is the hard part: two kids bent over their work, one little one in my lap, and not quite enough of me to go around.
-      <div style="margin-top:8px">🔒 <b>Privacy:</b> I don't save your photos. Google's Gemini AI reads each one, and on its free tier Google may use or review what's sent. Please <b>crop out your child's name</b>, and keep report cards and IEPs out of the app.</div>
+      <div style="margin-top:8px">🔒 <b>Privacy:</b> I don't save your photos. Google's Gemini AI reads each one, and on its free tier Google may use or review what's sent. I only count scans, using a random ID on your phone, never your name or email. Please <b>crop out your child's name</b>, and keep report cards and IEPs out of the app.</div>
       <div style="margin-top:8px">📌 Bookmark it or add it to your Home Screen. If it helped, pass it to one more parent. 💬 Feedback welcome!</div>
       <div style="margin-top:8px"><b>Just me:</b> This is a personal project from one parent. I'm not affiliated with any school, district, company or organization. The AI can get things wrong sometimes, so trust your judgment and your child's teacher.</div>
     </div>
@@ -581,36 +574,29 @@ function shrinkImage(dataUrl){
   });
 }
 
-/* ---------------- FAMILY CODE + DAILY LIMIT (parents scanning through the server) ---------------- */
-const FAM_STORE='hh_family_code';
-const DAILY_LIMIT=10;   // scans per phone per day (soft limit; the family code is the real gate)
-function getFamily(){ return (localStorage.getItem(FAM_STORE)||'').trim().toLowerCase(); }
+/* ---------------- ANONYMOUS DEVICE ID + DAILY LIMIT (parents scanning through the server) ---------------- */
+/* A random ID made on this phone. No name, email or anything personal: it only lets the
+   server count scans per phone. Clearing the browser makes a new one. */
+const DEVICE_STORE='hh_device_id';
+const DAILY_LIMIT=10;   // scans per phone per day (soft limit: resets if the browser is cleared)
+function getDevice(){
+  let id=localStorage.getItem(DEVICE_STORE)||'';
+  if(!/^[a-f0-9]{16,32}$/.test(id)){
+    const b=new Uint8Array(8);
+    (window.crypto&&crypto.getRandomValues)?crypto.getRandomValues(b):b.forEach((_,i)=>b[i]=Math.floor(Math.random()*256));
+    id=Array.from(b,x=>x.toString(16).padStart(2,'0')).join('');
+    localStorage.setItem(DEVICE_STORE,id);
+  }
+  return id;
+}
 function todayKey(){ const d=new Date(); return 'hh_scans_'+d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
 function scansToday(){ return parseInt(localStorage.getItem(todayKey())||'0',10)||0; }
 function addScan(){ localStorage.setItem(todayKey(), String(scansToday()+1)); refreshFamily(); }
 function refreshFamily(){
   const own = (localStorage.getItem(KEY_STORE)||'').trim();
-  const fam = getFamily();
-  document.getElementById('famLink').style.display = (!own && fam) ? 'block' : 'none';
-  if(fam){
-    document.getElementById('famName').textContent = fam;
-    const left = Math.max(0, DAILY_LIMIT - scansToday());
-    document.getElementById('famLeft').textContent = left+' scan'+(left===1?'':'s')+' left today';
-  }
-}
-function showFamilyBox(msg){
-  document.getElementById('famBox').style.display='block';
-  document.getElementById('famLink').style.display='none';
-  if(msg) document.getElementById('famHelp').textContent = msg;
-  document.getElementById('famInput').value = getFamily();
-  document.getElementById('famInput').focus();
-}
-function saveFamily(){
-  const v = document.getElementById('famInput').value.trim().toLowerCase();
-  if(!v){ showErr('Type your family code first.'); return; }
-  localStorage.setItem(FAM_STORE, v);
-  document.getElementById('famBox').style.display='none';
-  hideErr(); refreshFamily();
+  document.getElementById('famLink').style.display = own ? 'none' : 'block';
+  const left = Math.max(0, DAILY_LIMIT - scansToday());
+  document.getElementById('famLeft').textContent = left+' scan'+(left===1?'':'s')+' left today';
 }
 function resetInputs(){
   document.getElementById('cameraInput').value='';
@@ -625,11 +611,6 @@ async function onPhoto(ev){
   const key = (localStorage.getItem(KEY_STORE)||'').trim();
 
   if(!key){
-    if(!getFamily()){
-      showFamilyBox();
-      showErr('Enter your family code above first, then pick your photo again.');
-      resetInputs(); return;
-    }
     const left = DAILY_LIMIT - scansToday();
     if(left<=0){
       showErr('You\u2019ve used today\u2019s '+DAILY_LIMIT+' scans on this phone. See you tomorrow! 🌙');
@@ -660,7 +641,6 @@ async function onPhoto(ev){
       // shrunk photos are JPEG; if the browser couldn't open the photo (e.g. some iPhone HEIC files), send it as-is with its real type
       const mime = (dataUrl.match(/^data:([^;]+);/)||[])[1] || 'image/jpeg';
       const data = await callGemini(key, base64, mime);
-      if(!key && !getFamily()) break;   // family code was rejected: stop, the code box is showing
       if(data){ cards.push(data); }
       else { cards.push({type:'_error', _page:i+1, _msg:'could not read this page'}); }
     }catch(e){
@@ -676,12 +656,6 @@ async function onPhoto(ev){
   document.getElementById('libraryInput').value='';
 
   if(!cards.length){
-    // if the family code was refused, keep that message instead of blaming the photo
-    if(!key && !getFamily()){
-      showErr('Your family code didn\u2019t work, so nothing was scanned. Type it again in the box at the top, then pick your photo again.');
-      window.scrollTo(0,0);
-      return;
-    }
     showErr('Could not read any of those photos. Try a clearer, straight-on shot in good light.');
     return;
   }
@@ -727,18 +701,11 @@ async function callGemini(key, base64, mime){
   const MAX_TRIES = 4;            // 1 try + 3 retries
   const sleep = ms => new Promise(r=>setTimeout(r,ms));
   const headers = {'Content-Type':'application/json'};
-  if(!key) headers['X-Family-Code'] = getFamily();
+  if(!key) headers['X-Device-Id'] = getDevice();
   let res, json;
   for(let attempt=1; attempt<=MAX_TRIES; attempt++){
     res = await fetch(url,{method:'POST',headers:headers,body:JSON.stringify(body)});
     json = await res.json().catch(()=>({}));
-    // wrong or missing family code: forget it and ask again (no retries)
-    if(res.status===401 && json && json.error && json.error.code==='family_code'){
-      localStorage.removeItem(FAM_STORE);
-      showFamilyBox('That family code didn\u2019t work. Check it with the person who shared the app, then type it again.');
-      showErr('That family code didn\u2019t work. Enter it again above.');
-      return null;
-    }
     // setup problem, not Google being busy: stop retrying and say so plainly
     if(json && json.error && /Server key not set/i.test(json.error.message||'')){
       showErr('This site is missing its Gemini key. The owner needs to add <b>GEMINI_API_KEY</b> in Netlify (Environment variables) and redeploy.');
@@ -961,7 +928,6 @@ function quitQuiz(){
 
 /* ---------------- init ---------------- */
 loadKey();
-if(!(localStorage.getItem(KEY_STORE)||'').trim() && !getFamily()) showFamilyBox();
 refreshFamily();
 </script>
 </body>

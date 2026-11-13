@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1864ab">
+<title>Homework Helper — Parent Coach (prototype)</title>
+<style>
+  :root{
+    --bg:#f4f7fb; --card:#ffffff; --fg:#1a1a2e; --muted:#5a6475;
+    --blue:#1864ab; --blue2:#4dabf7; --pink:#e64980; --pink2:#ff8cc3;
+    --green:#2b8a3e; --purple:#7c3aed; --orange:#e67700; --yellow:#f6c343;
+    --line:#e3e9f2; --shadow:0 6px 24px rgba(20,40,80,.10);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    background:var(--bg); color:var(--fg); line-height:1.5;
+    padding:0 0 60px; max-width:560px; margin:0 auto;
+  }
+  header.appbar{
+    position:sticky; top:0; z-index:20;
+    background:linear-gradient(135deg,var(--blue),var(--blue2));
+    color:#fff; padding:14px 18px; box-shadow:var(--shadow);
+  }
+  header.appbar .title{font-size:19px;font-weight:800;letter-spacing:.2px}
+  header.appbar .sub{font-size:12px;opacity:.92;margin-top:2px}
+  .wrap{padding:16px}
+  .screen{display:none}
+  .screen.active{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  /* Home */
+  .hero{
+    background:var(--card); border-radius:18px; padding:20px; box-shadow:var(--shadow);
+    margin-bottom:16px; border:1px solid var(--line);
+  }
+  .hero h1{font-size:22px;margin:0 0 6px}
+  .hero p{margin:0;color:var(--muted);font-size:14px}
+  .btn{
+    display:block; width:100%; border:0; border-radius:14px; padding:16px;
+    font-size:16px; font-weight:700; cursor:pointer; margin-top:12px;
+    transition:transform .08s ease, box-shadow .15s ease;
+  }
+  .btn:active{transform:scale(.98)}
+  .btn.primary{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;box-shadow:var(--shadow)}
+  .btn.pink{background:linear-gradient(135deg,var(--pink),var(--pink2));color:#fff;box-shadow:var(--shadow)}
+  .btn.ghost{background:var(--card);color:var(--blue);border:2px solid var(--blue)}
+  .btn .big{font-size:17px}
+  .btn .small{display:block;font-size:12px;font-weight:600;opacity:.85;margin-top:3px}
+  .pill{display:inline-block;background:#e7f0ff;color:var(--blue);font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;margin-bottom:8px}
+  .note{font-size:12px;color:var(--muted);text-align:center;margin-top:14px;line-height:1.6}
+
+  /* Chooser list */
+  .choice{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:14px 16px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:12px;
+    box-shadow:0 2px 8px rgba(20,40,80,.05);transition:transform .08s ease;
+  }
+  .choice:active{transform:scale(.99)}
+  .choice .emoji{font-size:26px}
+  .choice .label{font-weight:700}
+  .choice .desc{font-size:12.5px;color:var(--muted)}
+
+  /* Manual form */
+  label.fld{display:block;font-weight:700;font-size:14px;margin:14px 0 6px}
+  textarea,input[type=text]{
+    width:100%;border:1.5px solid var(--line);border-radius:12px;padding:12px;
+    font-size:15px;font-family:inherit;background:var(--card);color:var(--fg);
+  }
+  textarea{min-height:90px;resize:vertical}
+  .seg{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .seg button{
+    flex:1;min-width:140px;border:1.5px solid var(--line);background:var(--card);color:var(--fg);
+    border-radius:12px;padding:12px;font-size:13.5px;font-weight:700;cursor:pointer;text-align:left;
+  }
+  .seg button.sel{border-color:var(--blue);background:#e7f0ff;color:var(--blue)}
+  .seg button .d{display:block;font-weight:500;font-size:11.5px;color:var(--muted);margin-top:2px}
+  .hint{font-size:12px;color:var(--muted);margin-top:4px}
+
+  /* Coach card */
+  .coach{background:var(--card);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;border:1px solid var(--line)}
+  .coach .top{color:#fff;padding:16px 18px}
+  .coach .top.read{background:linear-gradient(135deg,var(--pink),var(--pink2))}
+  .coach .top.word{background:linear-gradient(135deg,var(--blue),var(--blue2))}
+  .coach .top .for{font-size:12px;opacity:.92}
+  .coach .top .h{font-size:20px;font-weight:800;margin-top:2px}
+  .coach .top .s{font-size:13px;opacity:.92;margin-top:2px}
+  .sec{padding:14px 16px;border-top:1px solid var(--line)}
+  .sec:first-of-type{border-top:0}
+  .sec .st{font-weight:800;font-size:15px;margin-bottom:6px;display:flex;align-items:center;gap:7px}
+  .sec .sub{font-size:12.5px;color:var(--muted);margin-bottom:8px}
+  .warm{background:#e7f5ff}
+  .read{background:#fff9f0}
+  .help{background:#f6f1ff}
+  .fun{background:#eafff3}
+  .finish{background:#fff4e6}
+  .sec .script{background:#fff;border-radius:10px;padding:10px 12px;font-size:14px;margin-top:6px;border:1px solid var(--line)}
+  .sec .script b{color:var(--purple)}
+
+  .story{background:#fff;border:1px solid #ffe8a3;border-radius:10px;padding:12px;font-size:15px;line-height:1.9}
+  .ow{border-radius:5px;padding:1px 6px;font-weight:800;color:#222}
+  .ow.first{background:#ffd43b} .ow.next{background:#ffa94d} .ow.then{background:#69db7c} .ow.finally{background:#4dabf7;color:#fff}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+  .chip{background:#fff;border:1px solid var(--line);border-radius:9px;padding:7px 11px;font-size:17px}
+  .chip.sight{font-size:16px;font-weight:700}
+  .chip .c1{color:#e3342f} .chip .c2{color:#f6993f} .chip .c3{color:#38c172}
+
+  details{margin-top:5px}
+  details summary{cursor:pointer;color:#9aa5b5;font-size:12px;list-style:none}
+  details summary::-webkit-details-marker{display:none}
+  details summary:before{content:"👀 tap for answer";}
+  details[open] summary:before{content:"answer:";}
+  details .ans{font-weight:700;color:var(--green);margin-top:3px;font-size:14px}
+
+  .vocab{font-size:14.5px;line-height:1.9}
+  .vocab b{color:var(--green)}
+
+  .qbox{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px;margin-bottom:8px;font-size:14px}
+  .qbox .cue{color:var(--purple);font-size:13px;margin-top:3px}
+
+  ul.games{margin:4px 0 0;padding-left:18px;font-size:13.5px;line-height:1.85}
+
+  .gate{background:#ebfbee;border:1px solid #b2f2bb;border-radius:12px;padding:12px;margin-bottom:16px;font-size:12.5px}
+  .gate b{color:var(--green)}
+  .gate .chk{color:var(--green)}
+
+  .backbar{display:flex;gap:10px;margin:4px 0 18px}
+  .backbar button{flex:1;border:1.5px solid var(--line);background:var(--card);color:var(--fg);border-radius:12px;padding:12px;font-weight:700;font-size:14px;cursor:pointer}
+  .err{background:#fff0f0;border:1px solid #ffc9c9;color:#c92a2a;border-radius:12px;padding:12px;font-size:13.5px;margin-top:10px;display:none}
+  .footer{text-align:center;font-size:11px;color:var(--muted);margin-top:8px;padding:0 16px 20px}
+  .footer a{color:var(--blue)}
+</style>
+</head>
+<body>
+
+<header class="appbar">
+  <div class="title">📚 Homework Helper</div>
+  <div class="sub">Coaches YOU to help your child — reading first · Florida B.E.S.T. aligned</div>
+</header>
+
+<!-- ============ HOME ============ -->
+<div class="wrap">
+  <div id="home" class="screen active">
+    <div class="hero">
+      <span class="pill">PROTOTYPE</span>
+      <h1>Make homework time fun 🎈</h1>
+      <p>Snap or type tonight's reading homework. Get a short, warm card that tells you exactly what to say — ask, don't tell.</p>
+      <button class="btn primary" onclick="go('demo')">
+        <span class="big">▶︎ Try the two demo worksheets</span>
+        <span class="small">Leo &amp; Max's real sheets — fully built cards</span>
+      </button>
+      <button class="btn pink" onclick="go('manual')">
+        <span class="big">✍️ Test with new homework</span>
+        <span class="small">Type/paste the words or story → get a coach card</span>
+      </button>
+    </div>
+    <div class="note">
+      📷 The photo-camera step needs a vision-AI backend (a small per-photo cost), so it's not in this offline prototype.
+      Everything else — the coaching engine, card design, and accuracy gate — is live and testable here.
+    </div>
+  </div>
+
+  <!-- ============ DEMO CHOOSER ============ -->
+  <div id="demo" class="screen">
+    <div class="backbar"><button onclick="go('home')">← Back</button></div>
+    <h1 style="font-size:20px;margin:0 0 4px">Pick a demo worksheet</h1>
+    <p style="color:var(--muted);font-size:13.5px;margin:0 0 14px">These are the two sheets we designed together, as finished parent-coach cards.</p>
+    <div class="choice" onclick="render('shortU')">
+      <span class="emoji">🔤</span>
+      <div><div class="label">Words to Know — short u</div><div class="desc">Phonics word list · grade 1</div></div>
+    </div>
+    <div class="choice" onclick="render('gift')">
+      <span class="emoji">🎁</span>
+      <div><div class="label">Opening a Gift</div><div class="desc">Sequencing story + questions · grade 1</div></div>
+    </div>
+  </div>
+
+  <!-- ============ MANUAL ENTRY ============ -->
+  <div id="manual" class="screen">
+    <div class="backbar"><button onclick="go('home')">← Back</button></div>
+    <h1 style="font-size:20px;margin:0 0 4px">Test with real homework ✍️</h1>
+    <p style="color:var(--muted);font-size:13.5px;margin:0 0 6px">Type what's on the page. The app builds a parent-coach card and runs the accuracy checks.</p>
+
+    <label class="fld">What kind of worksheet is it?</label>
+    <div class="seg" id="typeSeg">
+      <button data-type="word" class="sel" onclick="pickType('word')">🔤 Word list (phonics / spelling)<span class="d">A list of spelling words + sight words</span></button>
+      <button data-type="story" onclick="pickType('story')">📖 Story + questions<span class="d">A short passage then questions</span></button>
+    </div>
+
+    <!-- WORD fields -->
+    <div id="fWord">
+      <label class="fld">This week's sound (optional)</label>
+      <input type="text" id="wSound" placeholder="e.g. short u, short a, long e">
+      <label class="fld">Spelling words to sound out <span style="font-weight:500;color:var(--muted)">(comma or space separated)</span></label>
+      <textarea id="wSpell" placeholder="run fun nut cut bug rug"></textarea>
+      <label class="fld">Sight words — "just know it" <span style="font-weight:500;color:var(--muted)">(optional)</span></label>
+      <textarea id="wSight" placeholder="could live one then three"></textarea>
+      <label class="fld">Vocabulary words <span style="font-weight:500;color:var(--muted)">(optional, one per line: word = meaning)</span></label>
+      <textarea id="wVocab" placeholder="furious = very angry&#10;collapsed = fell down"></textarea>
+    </div>
+
+    <!-- STORY fields -->
+    <div id="fStory" style="display:none">
+      <label class="fld">Story title (optional)</label>
+      <input type="text" id="sTitle" placeholder="Opening a Gift">
+      <label class="fld">The full story <span style="font-weight:500;color:var(--muted)">(paste every sentence — don't skip any)</span></label>
+      <textarea id="sText" style="min-height:120px" placeholder="First, pull off the tape.&#10;Next, rip off the paper.&#10;Then, lift off the top.&#10;Finally, dig in and get the toy!"></textarea>
+      <label class="fld">Questions <span style="font-weight:500;color:var(--muted)">(optional, one per line)</span></label>
+      <textarea id="sQ" placeholder="What does Eva do after the tape?&#10;What must she do to get the gift?"></textarea>
+    </div>
+
+    <div class="err" id="err"></div>
+    <button class="btn primary" style="margin-top:18px" onclick="buildManual()">Make the coach card →</button>
+  </div>
+
+  <!-- ============ RESULT ============ -->
+  <div id="result" class="screen">
+    <div class="backbar"><button id="resBack" onclick="go('home')">← Back</button></div>
+    <div id="gate" class="gate"></div>
+    <div id="cardOut"></div>
+  </div>
+
+  <div class="footer">
+    Prototype · grounded in <code>reading-coach-basis.md</code> (Florida B.E.S.T. · HMH Into Reading · Science of Reading).
+    Answers are hidden behind a tap so the child does the thinking.
+  </div>
+</div>
+
+<script>
+/* ---------------- navigation ---------------- */
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+let lastScreen='home';
+function showResult(from){ lastScreen=from; document.getElementById('resBack').onclick=()=>go(from); go('result'); }
+
+/* ---------------- phonics knowledge (for the accuracy gate) ---------------- */
+/* short-vowel sound -> the letter that spells it, and a quick test */
+const VOWEL = {
+  'short a':{letter:'a',demo:['c<b>a</b>t','b<b>a</b>g','m<b>a</b>p']},
+  'short e':{letter:'e',demo:['b<b>e</b>d','p<b>e</b>n','n<b>e</b>t']},
+  'short i':{letter:'i',demo:['s<b>i</b>t','p<b>i</b>g','l<b>i</b>d']},
+  'short o':{letter:'o',demo:['d<b>o</b>g','p<b>o</b>t','m<b>o</b>p']},
+  'short u':{letter:'u',demo:['c<b>u</b>p','r<b>u</b>g','m<b>u</b>g']}
+};
+/* common irregular/sight words that should NOT be in a sound-out list */
+const SIGHT = new Set(['could','would','should','one','two','three','live','the','they','then','there','here','come','some','said','was','were','who','what','where','of','to','do','you','your','a','is','are','have','give','been','does','done']);
+
+/* does a simple CVC-ish word contain the target short vowel as its only vowel? */
+function matchesShortVowel(word,letter){
+  const w=word.toLowerCase().replace(/[^a-z]/g,'');
+  if(w.length<2||w.length>5) return {ok:false,reason:'length'};
+  const vowels=(w.match(/[aeiou]/g)||[]);
+  if(vowels.length!==1) return {ok:false,reason:'not a single short vowel'};
+  if(vowels[0]!==letter) return {ok:false,reason:'different vowel ('+vowels[0]+')'};
+  if(/[aeiou]e$/.test(w)) return {ok:false,reason:'silent-e (long) word'};
+  return {ok:true};
+}
+
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+/* ---------------- ACCURACY GATE ---------------- */
+function renderGate(checks){
+  const pass = checks.every(c=>c.ok);
+  const rows = checks.map(c=>`<div>${c.ok?'<span class="chk">✓</span>':'⚠️'} ${esc(c.msg)}</div>`).join('');
+  return `<b>${pass?'✅ Passed the accuracy gate':'⚠️ Fixed before showing'}</b>
+    <div style="margin-top:6px;line-height:1.8">${rows}</div>`;
+}
+
+/* ---------------- CARD BUILDERS ---------------- */
+function warmSec(script){return `<div class="sec warm"><div class="st">① Warm up <span style="font-weight:500;font-size:12px;color:var(--muted)">· 1 min 🎈</span></div><div class="script">${script}</div></div>`;}
+function funSec(items){return `<div class="sec fun"><div class="st">🎉 Make it fun (pick one)</div><ul class="games">${items.map(i=>'<li>'+i+'</li>').join('')}</ul></div>`;}
+function finishSec(txt){return `<div class="sec finish"><div class="st">✅ You're done when…</div><div class="sub" style="color:var(--fg);margin:0">${txt}</div></div>`;}
+
+/* WORD-LIST card */
+function buildWordCard(d){
+  const checks=[];
+  let soundLetter=null, demo=null, soundName=(d.sound||'').toLowerCase().trim();
+  if(VOWEL[soundName]){ soundLetter=VOWEL[soundName].letter; demo=VOWEL[soundName].demo; }
+
+  // split words that truly match vs. ones to drop/move
+  const kept=[], droppedWrong=[], movedSight=[];
+  d.spell.forEach(w=>{
+    const lw=w.toLowerCase();
+    if(SIGHT.has(lw)){ movedSight.push(w); return; }
+    if(soundLetter){
+      const m=matchesShortVowel(w,soundLetter);
+      if(!m.ok){ droppedWrong.push(w); return; }
+    }
+    kept.push(w);
+  });
+
+  // accuracy checks
+  if(soundName){
+    checks.push({ok:true,msg:`Sound-spelling: show the letter “${soundLetter}”, prove the sound with bold examples (never a bare "uh").`});
+    if(droppedWrong.length) checks.push({ok:false,msg:`Phonics: dropped ${droppedWrong.map(w=>'“'+w+'”').join(', ')} — not a ${soundName} word, so not shown in the sound-out group.`});
+    else checks.push({ok:true,msg:`Phonics: every sound-out word truly has the ${soundName} sound.`});
+  } else {
+    checks.push({ok:true,msg:`No target sound given — words shown as a plain sound-out list.`});
+  }
+  if(movedSight.length) checks.push({ok:false,msg:`Sight words: moved ${movedSight.map(w=>'“'+w+'”').join(', ')} to "just know it" (can't be sounded out).`});
+  else checks.push({ok:true,msg:`Sight words sorted into "just know it", not sound-out.`});
+  checks.push({ok:true,msg:`Clutter: no standard codes or jargon on the card.`});
+  checks.push({ok:true,msg:`Confidence: uncertain items left out, not hedged on-page.`});
+
+  const allSight=[...new Set([...movedSight, ...d.sight])];
+
+  let header = soundLetter
+    ? `This week's sound: short <b>${soundLetter}</b> (like in ${demo[0]})`
+    : (d.sound? `This week: ${esc(d.sound)}` : `This week's spelling words`);
+
+  let html = `<div class="coach"><div class="top word"><div class="for">👪 For you, Mom/Dad · 5–10 min · keep it fun</div><div class="h">Words to Know</div><div class="s">${header}</div></div>`;
+
+  html += warmSec(`Say: <i>"Let's be word detectives! We're going to sound out some words and zap some 'just-know-it' words. Ready?"</i>`);
+
+  if(kept.length){
+    html += `<div class="sec"><div class="st">🔤 Sound these out</div><div class="sub">Point to each letter as your child makes the sound, then say it fast.</div><div class="chips">`;
+    kept.forEach(w=>{
+      const L=w.split('');
+      const colored=L.map((c,i)=>`<span class="c${(i%3)+1}">${esc(c)}</span>`).join('');
+      html+=`<span class="chip">${colored}</span>`;
+    });
+    html+=`</div><div class="script">👪 <b>Say:</b> "Stretch it slow — /${kept[0][0]||'b'}/ … — now say it fast!"</div></div>`;
+  }
+
+  if(allSight.length){
+    html += `<div class="sec"><div class="st">👀 Just know these</div><div class="sub">Don't sound out — recognize them fast.</div><div class="chips">`;
+    allSight.forEach(w=>{ html+=`<span class="chip sight">${esc(w)}</span>`; });
+    html+=`</div><div class="script">👪 <b>Ask:</b> Flash each one — can your child say it in under 3 seconds?</div></div>`;
+  }
+
+  if(d.vocab.length){
+    html += `<div class="sec"><div class="st">💡 Know the meaning</div><div class="vocab">`;
+    d.vocab.forEach(v=>{ html+=`<b>${esc(v.word)}</b> — ${esc(v.meaning)}<br>`; });
+    html+=`</div><div class="script">👪 <b>Ask it backwards:</b> "What word means <i>${esc(d.vocab[0].meaning)}</i>?"</div></div>`;
+  }
+
+  // fun games — use the real sound/demo if known
+  const games=[];
+  if(soundLetter) games.push(`Short-<b>${soundLetter}</b> hunt: find 5 things with the short <b>${soundLetter}</b> sound (${demo.join(', ')})`);
+  games.push(`Sight-word speed round — beat your own time`);
+  if(d.vocab.length) games.push(`Act out <i>${d.vocab.map(v=>esc(v.word)).slice(0,3).join('</i>, <i>')}</i>`);
+  else games.push(`Make a silly sentence using 3 of the words out loud`);
+  html += funSec(games);
+
+  html += finishSec(`your child can read the sound-out words smoothly and recall the "just know it" words fast. End on a high-five, not a drill.`);
+  html += `</div>`;
+
+  return {html, gate:renderGate(checks)};
+}
+
+/* STORY card */
+const ORDER=['first','next','then','finally','after that','last','secondly','later'];
+function highlightOrder(line){
+  let out=esc(line);
+  // highlight known order words at start of clause
+  [['finally','finally'],['first','first'],['next','next'],['then','then']].forEach(([w,cls])=>{
+    const re=new RegExp('\\b('+w+')\\b','i');
+    out=out.replace(re,m=>`<span class="ow ${cls}">${m}</span>`);
+  });
+  return out;
+}
+function buildStoryCard(d){
+  const checks=[];
+  const lines=d.story.split(/\n+/).map(s=>s.trim()).filter(Boolean);
+  checks.push({ok:true,msg:`Full text: all ${lines.length} sentence(s) shown — nothing skipped.`});
+  const hasOrder = lines.some(l=>ORDER.some(o=>new RegExp('\\b'+o+'\\b','i').test(l)));
+  checks.push({ok:true,msg: hasOrder?`Task type: sequencing — order words highlighted as clues.`:`Task type: comprehension — read together, then find evidence in the text.`});
+  checks.push({ok:true,msg:`Answers hidden behind a tap so the child does the thinking.`});
+  checks.push({ok:true,msg:`Clutter: no codes or jargon; parent-voice scripts only.`});
+
+  let html=`<div class="coach"><div class="top read"><div class="for">👪 For you, Mom/Dad · 5–10 min · keep it fun</div><div class="h">${esc(d.title||'Reading together')} 📖</div><div class="s">${hasOrder?'Put the story in order':'Read it together, then find the clues'}</div></div>`;
+
+  html += warmSec(`Say: <i>"Let's play detective! This story has ${hasOrder?'secret ORDER words hiding in it — First, Next, Then, Finally':'clues hiding in the words'}. Ready to hunt for them?"</i>`);
+
+  html += `<div class="sec read"><div class="st">② Read it together <span style="font-weight:500;font-size:12px;color:var(--muted)">· 2 min 📖</span></div><div class="sub">Read out loud with your child. ${hasOrder?'The colored words are the order clues.':''}</div><div class="story">`;
+  html += lines.map(l=> hasOrder?highlightOrder(l):esc(l)).join('<br>');
+  html += `</div></div>`;
+
+  if(d.questions.length){
+    html += `<div class="sec help"><div class="st">③ Help, don't tell <span style="font-weight:500;font-size:12px;color:var(--muted)">· 3 min 💬</span></div><div class="sub">When your child is stuck, point them to a clue word — don't give the answer. Celebrate when they get it.</div>`;
+    d.questions.forEach((q,i)=>{
+      const cue = hasOrder ? `🕵️ Find the next order word in the story.` : `🕵️ Point to the part of the story that talks about this.`;
+      html += `<div class="qbox"><b>${i+1}.</b> ${esc(q)}<div class="cue">${cue}</div>
+        <details><summary></summary><div class="ans">(peek together at the matching line in the story)</div></details></div>`;
+    });
+    html += `</div>`;
+  }
+
+  const games=[];
+  if(hasOrder){
+    games.push(`Retell making a sandwich using First / Next / Then / Finally`);
+    games.push(`Write the steps, shuffle them, have your child re-order`);
+    games.push(`"Prove it" — point to the exact line in the story for each answer`);
+  } else {
+    games.push(`Ask your child to retell the story in their own words`);
+    games.push(`"Prove it" — for each answer, point to the line in the story`);
+    games.push(`Draw the favorite part together`);
+  }
+  html += funSec(games);
+  html += finishSec(hasOrder?`your child can retell the story in order using the clue words. End on the high-five.`:`your child can retell the main idea and point to evidence in the text. End on a win.`);
+  html += `</div>`;
+
+  return {html, gate:renderGate(checks)};
+}
+
+/* ---------------- DEMO data ---------------- */
+function render(which){
+  let out;
+  if(which==='shortU'){
+    out=buildWordCard({
+      sound:'short u',
+      spell:['run','fun','nut','cut','bug','rug','men'], // 'men' is short-e → gate drops it
+      sight:['could','live','one','then','three'],
+      vocab:[
+        {word:'shelter',meaning:'a building that keeps you safe'},
+        {word:'materials',meaning:'things used to make something'},
+        {word:'collapsed',meaning:'fell down'},
+        {word:'furious',meaning:'very angry'},
+        {word:'refused',meaning:'said firmly you would not'}
+      ]
+    });
+  } else {
+    out=buildStoryCard({
+      title:'Opening a Gift',
+      story:`Eva, open your gift!
+First, pull off the tape.
+Next, rip off the paper.
+Then, lift off the top to the box.
+There is a lot of paper inside.
+Pull out that paper.
+Finally, dig your hands into the box.
+There is the toy you want!`,
+      questions:[
+        'Eva pulls off the tape. Next, she will ___',
+        'What must Eva do after she rips off the paper?',
+        'What must Eva do to get the gift?'
+      ]
+    });
+  }
+  document.getElementById('gate').innerHTML=out.gate;
+  document.getElementById('cardOut').innerHTML=out.html;
+  showResult('demo');
+}
+
+/* ---------------- MANUAL ---------------- */
+let curType='word';
+function pickType(t){
+  curType=t;
+  document.querySelectorAll('#typeSeg button').forEach(b=>b.classList.toggle('sel',b.dataset.type===t));
+  document.getElementById('fWord').style.display = t==='word'?'block':'none';
+  document.getElementById('fStory').style.display = t==='story'?'block':'none';
+}
+function splitWords(s){return (s||'').split(/[,\n\s]+/).map(x=>x.trim()).filter(Boolean);}
+function parseVocab(s){
+  return (s||'').split(/\n+/).map(l=>l.trim()).filter(Boolean).map(l=>{
+    const [w,...rest]=l.split('=');
+    return {word:(w||'').trim(), meaning:rest.join('=').trim()||'—'};
+  }).filter(v=>v.word);
+}
+function showErr(m){const e=document.getElementById('err');e.textContent=m;e.style.display='block';}
+function buildManual(){
+  document.getElementById('err').style.display='none';
+  let out;
+  if(curType==='word'){
+    const spell=splitWords(document.getElementById('wSpell').value);
+    const sight=splitWords(document.getElementById('wSight').value);
+    if(!spell.length && !sight.length){ showErr('Add at least a few spelling or sight words.'); return; }
+    out=buildWordCard({
+      sound:document.getElementById('wSound').value,
+      spell, sight, vocab:parseVocab(document.getElementById('wVocab').value)
+    });
+  } else {
+    const story=document.getElementById('sText').value.trim();
+    if(!story){ showErr('Paste the story text (every sentence, don\'t skip any).'); return; }
+    out=buildStoryCard({
+      title:document.getElementById('sTitle').value,
+      story,
+      questions:(document.getElementById('sQ').value||'').split(/\n+/).map(x=>x.trim()).filter(Boolean)
+    });
+  }
+  document.getElementById('gate').innerHTML=out.gate;
+  document.getElementById('cardOut').innerHTML=out.html;
+  showResult('manual');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "name": "cue",
+  "private": true,
+  "version": "12.4.0",
+  "dependencies": {
+    "@netlify/blobs": "^8.0.0"
+  }
+}

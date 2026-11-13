@@ -1,18 +1,20 @@
-# Homework Helper (photo → parent coach card)
+# Homework Captain — homework help, in your own voice
 
-A single-page web app. Snap or upload a photo of a child's homework worksheet
-and get a warm, plain-English parent-coaching card: what to say, the real
-answers hidden behind a tap, make-it-fun ideas, and a finish line.
+A single-page web app. A parent snaps a photo of a child's homework worksheet
+and gets a parent-coaching card: exactly what to say, answers hidden behind a
+tap, and a "Play Quick Check" game made from that page. Grounded in Florida
+B.E.S.T. standards and the Science of Reading (see reading-coach-basis.md).
 
-- **Bring-your-own-key:** each user pastes their own free Google Gemini API key.
-  The key is stored only in that browser (localStorage) — it is never in this
-  file and never uploaded anywhere except Google when a photo is scanned.
-- **No build step.** `index.html` is the whole app.
+## One repo, two hosts
+- **Netlify** (main): homework-captain.netlify.app — serves index.html and
+  netlify/functions/scan.js. netlify.toml rewrites /api/scan to that function.
+- **Cloudflare Pages** (backup): serves the same index.html and the Pages
+  Function at functions/api/scan.js.
 
-## Deploy
-Hosted on Netlify. Every push to the `main` branch auto-deploys the live site.
+The app always calls /api/scan. Both hosts need the environment variable
+GEMINI_API_KEY set (a free-tier Google Gemini key with no billing attached).
+The key is never in this repo.
 
-## Local preview
-Open `index.html` in any browser, or serve it:
-
-    python3 -m http.server 8777 --bind 127.0.0.1 --directory .
+## Notes
+- No build step. index.html is the whole app.
+- Per-phone soft cap: 20 scans/day. Photos are never stored.

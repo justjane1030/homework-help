@@ -5,6 +5,14 @@
 [functions]
   directory = "netlify/functions"
 
+# The app calls /api/scan (its Cloudflare Pages Function path).
+# On Netlify, rewrite that path to the Netlify Function so the same
+# files in this repo work on both hosts.
+[[redirects]]
+  from = "/api/scan"
+  to = "/.netlify/functions/scan"
+  status = 200
+
 # Never cache index.html, so a new deploy shows up immediately on phones.
 [[headers]]
   for = "/index.html"
